@@ -1,0 +1,226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - Base authentication
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String    // Hashed with bcrypt
+  name          String
+  role          UserRole  @default(TOURIST)
+  phone         String?
+  avatar        String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  touristProfile Tourist?
+  agencyProfile  Agency?
+  bookings       Booking[]
+  reviews        Review[]
+  
+  @@index([email])
+  @@index([role])
+}
+
+enum UserRole {
+  TOURIST
+  AGENCY
+}
+
+// Tourist profile - Extended user info
+model Tourist {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  dateOfBirth   DateTime?
+  preferences   Json?     // Travel preferences stored as JSON
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// Agency profile
+model Agency {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  agencyName      String
+  description     String?
+  contactEmail    String
+  contactPhone    String
+  address         String?
+  city            String?
+  country         String    @default("Pakistan")
+  website         String?
+  logo            String?
+  rating          Float     @default(0.0)
+  totalReviews    Int       @default(0)
+  isVerified      Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packages        Package[]
+  bookings        Booking[]
+  notifications   Notification[]
+  
+  @@index([userId])
+  @@index([agencyName])
+  @@index([rating])
+  @@index([isActive])
+}
+
+// Travel packages
+model Package {
+  id              String      @id @default(uuid())
+  agencyId        String
+  title           String
+  destination     String
+  description     String      @db.Text
+  duration        Int         // Days
+  price           Decimal     @db.Decimal(10, 2)
+  originalPrice   Decimal?    @db.Decimal(10, 2) // For discounts
+  maxTravelers    Int         @default(1)
+  minTravelers    Int         @default(1)
+  includes        String[]    // Array of included items
+  excludes        String[]    // Array of excluded items
+  itinerary       Json?       // Day-by-day itinerary
+  images          String[]    // Array of image URLs
+  rating          Float       @default(0.0)
+  totalBookings   Int         @default(0)
+  totalReviews    Int         @default(0)
+  isActive        Boolean     @default(true)
+  startDate       DateTime?   // Next available date
+  endDate         DateTime?   // Last available date
+  cancellationPolicy String?  @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Relations
+  agency          Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  reviews         Review[]
+  
+  @@index([agencyId])
+  @@index([destination])
+  @@index([price])
+  @@index([rating])
+  @@index([isActive])
+  @@index([duration])
+  @@index([title])
+}
+
+// Bookings
+model Booking {
+  id              String        @id @default(uuid())
+  userId          String
+  packageId       String
+  agencyId        String
+  travelers       Int           @default(1)
+  totalAmount     Decimal       @db.Decimal(10, 2)
+  bookingDate     DateTime      // Travel date
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  specialRequests String?       @db.Text
+  cancellationReason String?    @db.Text
+  cancelledAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package         Package       @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  agency          Agency        @relation(fields: [agencyId], references: [id])
+  notification    Notification?
+  
+  @@index([userId])
+  @@index([packageId])
+  @@index([agencyId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([bookingDate])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+// Reviews and ratings
+model Review {
+  id          String    @id @default(uuid())
+  userId      String
+  packageId   String
+  rating      Int       // 1-5 stars
+  comment     String?   @db.Text
+  images      String[]  // Review images
+  isVerified  Boolean   @default(false)
+  helpfulCount Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package     Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, packageId]) // One review per user per package
+  @@index([packageId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+// Notifications
+model Notification {
+  id          String             @id @default(uuid())
+  agencyId    String
+  bookingId   String?            @unique
+  type        NotificationType
+  title       String
+  message     String             @db.Text
+  isRead      Boolean            @default(false)
+  readAt      DateTime?
+  metadata    Json?              // Additional data
+  createdAt   DateTime           @default(now())
+  
+  // Relations
+  agency      Agency             @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  booking     Booking?           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([agencyId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([type])
+}
+
+enum NotificationType {
+  BOOKING_NEW
+  BOOKING_CANCELLED
+  BOOKING_UPDATED
+  REVIEW_NEW
+  PACKAGE_INQUIRY
+  SYSTEM_ALERT
+}

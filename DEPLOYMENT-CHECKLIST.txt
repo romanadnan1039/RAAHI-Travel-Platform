@@ -1,0 +1,89 @@
+╔═══════════════════════════════════════════════════════════════╗
+║          RAAHI DEPLOYMENT CHECKLIST - Track Your Progress      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+☐ Step 1: Install Git
+  - Download from: https://git-scm.com/download/win
+  - Run installer (click Next on everything)
+  - Restart PowerShell
+  - Verify: Run "git --version"
+
+☐ Step 2: Create GitHub Account (if needed)
+  - Sign up at: https://github.com/signup
+  - Verify your email
+
+☐ Step 3: Create GitHub Repository
+  - Go to: https://github.com/new
+  - Name: RAAHI-Travel-Platform
+  - Visibility: PUBLIC ✓
+  - Don't add README
+  - Click "Create repository"
+
+☐ Step 4: Push Code to GitHub
+  - Run script: powershell -ExecutionPolicy Bypass -File "1-push-to-github.ps1"
+  - Enter your GitHub username when prompted
+  - Wait for push to complete
+
+☐ Step 5: Deploy to Railway - Database
+  - Sign up: https://railway.app
+  - New Project → Deploy from GitHub repo
+  - Add PostgreSQL database
+  - Copy DATABASE_URL
+
+☐ Step 6: Deploy to Railway - Backend
+  - Configure variables (NODE_ENV, PORT, JWT_SECRET, DATABASE_URL)
+  - Set Root Directory: backend
+  - Set Start Command
+  - Deploy and wait
+  - Copy backend URL
+  - Seed database from terminal
+
+☐ Step 7: Get OpenAI API Key
+  - Go to: https://platform.openai.com/api-keys
+  - Create new key
+  - Copy and save it
+
+☐ Step 8: Deploy to Railway - AI Agent
+  - Add new service from GitHub repo
+  - Configure variables (NODE_ENV, PORT, BACKEND_URL, OPENAI_API_KEY)
+  - Set Root Directory: ai-agent
+  - Set Start Command
+  - Deploy and wait
+  - Copy AI agent URL
+
+☐ Step 9: Deploy to Vercel - Frontend
+  - Sign up: https://vercel.com/signup
+  - Import RAAHI-Travel-Platform
+  - Configure: Framework (Vite), Root (frontend), Build (npm run build), Output (dist)
+  - Add environment variables (VITE_API_URL, VITE_AI_AGENT_URL, VITE_WS_URL)
+  - Deploy and wait
+  - Copy Vercel URL
+
+☐ Step 10: Update CORS
+  - Go to Railway → Backend service → Variables
+  - Add FRONTEND_URL with your Vercel URL
+  - Redeploy backend
+
+☐ Step 11: Test Your Live App
+  - Open Vercel URL in browser
+  - Login: tourist1@example.com / password123
+  - Test: Browse packages, filters, AI chat, create booking
+  - Login: agency1@example.com / password123
+  - Test: Dashboard, manage packages, view bookings
+
+═══════════════════════════════════════════════════════════════
+
+SAVE YOUR URLs:
+
+Backend URL:      https://___________________________.up.railway.app
+AI Agent URL:     https://___________________________.up.railway.app
+Frontend URL:     https://___________________________.vercel.app
+GitHub Repo:      https://github.com/___________/RAAHI-Travel-Platform
+
+═══════════════════════════════════════════════════════════════
+
+✅ ALL DONE! YOUR APP IS LIVE! 🎉
+
+Share your Vercel URL with anyone to show your FYP!
+
+═══════════════════════════════════════════════════════════════

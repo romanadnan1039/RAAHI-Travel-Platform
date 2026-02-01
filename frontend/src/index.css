@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import LEMON MILK Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* LEMON MILK Font - using Google Fonts alternative or system fonts */
+@font-face {
+  font-family: 'LEMON MILK';
+  src: local('Calibri Bold'), local('Arial Bold');
+  font-weight: bold;
+  font-style: normal;
+}
+
+:root {
+  /* RAAHI Brand Colors */
+  --raahi-dark: #41491D;
+  --raahi-darker: #2E3800;
+  --raahi-medium: #566614;
+  --raahi-khaki: #6E6B40;
+  --raahi-cream: #FFFAC3;
+  --raahi-black: #000000;
+
+  font-family: Calibri, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #000000;
+  font-family: 'Calibri', system-ui, sans-serif;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-family: 'LEMON MILK', 'Calibri Bold', Arial, sans-serif;
+  font-weight: bold;
+}
+
+h4, h5, h6 {
+  font-family: 'Calibri Bold', Arial, sans-serif;
+  font-weight: bold;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #566614;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #41491D;
+}
+
+/* Scrollbar for Booking Modal */
+.booking-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-thumb {
+  background: #566614;
+  border-radius: 10px;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #41491D;
+}
+
+/* Premium Scrollbar for all elements */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #566614 0%, #6E6B40 100%);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #41491D 0%, #566614 100%);
+}
