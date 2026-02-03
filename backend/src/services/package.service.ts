@@ -79,7 +79,7 @@ export const getAllPackages = async (filters: any): Promise<ApiResponse<Paginate
   return {
     success: true,
     data: {
-      packages,
+      data: packages,
       total,
       page: Number(page),
       limit: take,
