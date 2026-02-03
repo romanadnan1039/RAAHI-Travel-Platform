@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
-import NotificationBell from '../components/notifications/NotificationBell'
+// import NotificationBell from '../components/notifications/NotificationBell'
 import { packageApi, bookingApi } from '../services/api'
 import { motion, AnimatePresence } from 'framer-motion'
 import PackageList from './PackageList'
@@ -12,7 +12,7 @@ import type { Package } from '../types'
 
 export default function AgencyDashboard() {
   const location = useLocation()
-  const { user } = useAuthStore()
+  const { user: _user } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'my-packages' | 'browse-all' | 'bookings' | 'stats'>('my-packages')
   const [myPackages, setMyPackages] = useState<any[]>([])
   const [bookings, setBookings] = useState<any[]>([])

@@ -21,7 +21,7 @@ interface FilterState {
 }
 
 export default function UserDashboard() {
-  const { user } = useAuthStore()
+  const { user: _user } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'packages' | 'bookings'>('packages')
   const [packages, setPackages] = useState<Package[]>([])
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])

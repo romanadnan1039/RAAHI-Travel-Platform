@@ -34,7 +34,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [shouldScroll, setShouldScroll] = useState(false)
   const isUserScrolling = useRef(false)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
+  const scrollTimeoutRef = useRef<number | undefined>()
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -260,7 +260,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                       
                       return (
                         <motion.div
-                          key={pkg.id || pkg.packageId || `pkg-${idx}`}
+                          key={pkg.id || `pkg-${idx}`}
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.2 }}

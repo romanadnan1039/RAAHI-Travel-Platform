@@ -13,7 +13,7 @@ interface ChatMessageProps {
   onSelectRecommendation?: (pkg: Package) => void
 }
 
-export default function ChatMessage({ message, onSelectRecommendation }: ChatMessageProps) {
+export default function ChatMessage({ message, onSelectRecommendation: _onSelectRecommendation }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
   return (
