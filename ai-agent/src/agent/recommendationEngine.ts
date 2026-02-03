@@ -105,7 +105,7 @@ export const findMatchingPackages = async (criteria: {
   // Log recommendations for debugging
   console.log(`\n📦 Returning ${topRecommendations.length} recommendations:`)
   topRecommendations.forEach((rec, idx) => {
-    console.log(`${idx + 1}. ${rec.title} - Images: ${rec.images ? rec.images.length : 0}`)
+    console.log(`${idx + 1}. ${rec.title} - Match: ${rec.matchScore}%`)
   })
 
   return topRecommendations
