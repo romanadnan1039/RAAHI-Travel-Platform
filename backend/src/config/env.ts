@@ -1,6 +1,9 @@
 import dotenv from 'dotenv'
 
-dotenv.config()
+// Only load .env file in development, Railway provides env vars directly in production
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config()
+}
 
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
