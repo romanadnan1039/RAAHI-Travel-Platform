@@ -69,16 +69,17 @@ export default function UserDashboard() {
       if (response.success && response.data) {
         // Handle different response structures
         let allPackages: Package[] = []
+        const responseData = response.data as any
         
         if (Array.isArray(response.data)) {
           // Direct array response
           allPackages = response.data
-        } else if (response.data.packages && Array.isArray(response.data.packages)) {
+        } else if (responseData.packages && Array.isArray(responseData.packages)) {
           // Nested packages array
-          allPackages = response.data.packages
-        } else if (response.data.data && Array.isArray(response.data.data)) {
+          allPackages = responseData.packages
+        } else if (responseData.data && Array.isArray(responseData.data)) {
           // Double nested
-          allPackages = response.data.data
+          allPackages = responseData.data
         }
         
         console.log('Loaded packages:', allPackages.length)
