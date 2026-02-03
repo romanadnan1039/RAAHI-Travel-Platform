@@ -3,9 +3,17 @@ import app from './app'
 import { config } from './config/env'
 import { logger } from './utils/logger.util'
 import { initializeSocket } from './config/socket'
+import { runMigrations } from './migrate'
 
 const httpServer = createServer(app)
 initializeSocket(httpServer)
+
+// Run migrations on startup in production
+if (config.nodeEnv === 'production') {
+  runMigrations().catch(err => {
+    logger.error('Failed to run migrations on startup:', err)
+  })
+}
 
 const server = httpServer.listen(config.port, () => {
   logger.info(`Server running on port ${config.port}`)
