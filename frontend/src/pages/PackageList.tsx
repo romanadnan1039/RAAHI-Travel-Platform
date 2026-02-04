@@ -3,6 +3,7 @@ import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import PackageGrid from '../components/packages/PackageGrid'
 import FilterSidebar from '../components/packages/FilterSidebar'
+import PackageDetailsModal from '../components/packages/PackageDetailsModal'
 import { packageApi } from '../services/api'
 import type { Package } from '../types'
 
@@ -30,6 +31,7 @@ export default function PackageList() {
     travelType: '',
   })
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null)
 
   useEffect(() => {
     loadPackages()
@@ -222,9 +224,18 @@ export default function PackageList() {
             packages={filteredPackages}
             loading={loading}
             showAgency={true}
+            onPackageClick={(pkg) => setSelectedPackageId(pkg.id)}
           />
         </div>
       </div>
+
+      {/* Package Details Modal */}
+      {selectedPackageId && (
+        <PackageDetailsModal
+          packageId={selectedPackageId}
+          onClose={() => setSelectedPackageId(null)}
+        />
+      )}
 
       <Footer />
     </div>
