@@ -48,7 +48,9 @@ export default function PackageList() {
 
       const response = await packageApi.getAll(filterParams)
       if (response.success && response.data) {
-        setPackages(response.data.packages || response.data || [])
+        // Handle different response structures
+        const packagesData = response.data.data || response.data.packages || response.data || []
+        setPackages(Array.isArray(packagesData) ? packagesData : [])
       } else {
         setError('Failed to load packages. Please try again.')
       }
