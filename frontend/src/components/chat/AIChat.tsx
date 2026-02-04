@@ -137,12 +137,26 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error)
+      
+      let errorContent = 'Sorry, I encountered an error. Please try again.'
+      
+      // Provide more specific error messages
+      if (error.response?.status === 503) {
+        errorContent = '🔧 AI service is currently unavailable. Our team is working on it. Please try again in a few moments.'
+      } else if (error.response?.status === 401) {
+        errorContent = '🔒 Please log in to use the AI assistant.'
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        errorContent = '📡 Connection error. Please check your internet connection and try again.'
+      } else if (error.response?.data?.error?.message) {
+        errorContent = `⚠️ ${error.response.data.error.message}`
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorContent,
       }
       setMessages((prev) => [...prev, errorMessage])
       setShouldScroll(true)

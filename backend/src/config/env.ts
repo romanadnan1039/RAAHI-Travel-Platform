@@ -25,6 +25,10 @@ export const config = {
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   },
   
+  ai: {
+    agentUrl: process.env.AI_AGENT_URL || 'http://localhost:5001',
+  },
+  
   upload: {
     dir: process.env.UPLOAD_DIR || 'uploads',
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880', 10), // 5MB
