@@ -117,10 +117,11 @@ export const parseUserQuery = (query: string): ParsedQuery => {
     const match = query.match(pattern)
     if (match) {
       let amount = parseInt(match[1])
-      // If it's not already in thousands (k pattern)
-      if (!pattern.source.includes('k') && amount < 1000) {
-        amount = amount * 1000 // Convert to PKR
+      // If pattern includes 'k', multiply by 1000
+      if (pattern.source.includes('k')) {
+        amount = amount * 1000
       }
+      // If pattern includes 'thousand' or 'hazar', already in thousands
       result.budget = amount
       break
     }
