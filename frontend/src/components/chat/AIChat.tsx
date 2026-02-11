@@ -325,7 +325,8 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
-          minHeight: '300px'
+          minHeight: '200px',
+          maxHeight: 'calc(100vh - 400px)'
         }}
       >
         <AnimatePresence mode="popLayout">
