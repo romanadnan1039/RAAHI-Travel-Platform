@@ -241,7 +241,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl shadow-2xl h-full flex flex-col border border-gray-700/30 overflow-hidden backdrop-blur-xl">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl shadow-2xl h-full flex flex-col border border-gray-700/30 backdrop-blur-xl">
       {/* Modern Gradient Header with Glass Effect */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -325,8 +325,8 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
-          minHeight: '200px',
-          maxHeight: 'calc(100vh - 400px)'
+          minHeight: '250px',
+          flex: '1 1 auto'
         }}
       >
         <AnimatePresence mode="popLayout">
