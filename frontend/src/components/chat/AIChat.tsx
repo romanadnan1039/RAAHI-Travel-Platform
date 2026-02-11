@@ -461,9 +461,10 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                                 </div>
                               )}
                             </div>
+                            </div>
                             
                             {/* Price and Actions */}
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-700/30">
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-700/30 relative z-10">
                               <div>
                                 <div className="flex items-baseline gap-2">
                                   <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFAC3] to-[#6E6B40]">
@@ -518,7 +519,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                         </motion.div>
                     )})}
                   </div>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           ))}

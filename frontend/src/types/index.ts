@@ -48,6 +48,8 @@ export interface Package {
   endDate?: string
   cancellationPolicy?: string
   agency?: Agency
+  matchScore?: number // AI Agent match score (0-100)
+  packageId?: string // Alternative ID field
 }
 
 export interface Booking {
