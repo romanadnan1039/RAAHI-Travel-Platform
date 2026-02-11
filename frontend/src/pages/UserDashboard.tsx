@@ -272,9 +272,9 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-[#FFFAC3]/20 via-white to-[#566614]/5 flex flex-col">
       <Navbar />
 
-      <div className="flex-1 container mx-auto px-4 py-6">
+      <div className="flex-1 container mx-auto px-4 py-6 pb-24">
         {/* Main Container - Premium Card Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 h-full">
+        <div className="flex flex-col lg:flex-row gap-6">
           
           {/* LEFT: AI Chat Card - Premium Glass Effect */}
           <motion.div 
@@ -283,7 +283,7 @@ export default function UserDashboard() {
             transition={{ duration: 0.4 }}
             className="w-full lg:w-[360px] flex-shrink-0"
           >
-            <div className="h-[calc(100vh-150px)] rounded-2xl overflow-visible shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300">
+            <div className="h-[calc(100vh-200px)] max-h-[800px] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300">
               <AIChat
                 onPackageFilter={handlePackageFilter}
               />
