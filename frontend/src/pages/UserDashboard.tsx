@@ -283,7 +283,7 @@ export default function UserDashboard() {
             transition={{ duration: 0.4 }}
             className="w-full lg:w-[400px] flex-shrink-0"
           >
-            <div className="h-[calc(100vh-150px)] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300">
+            <div className="h-[calc(100vh-140px)] max-h-[850px] rounded-2xl shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300">
               <AIChat
                 onPackageFilter={handlePackageFilter}
                 onPackageSelect={(pkg) => {

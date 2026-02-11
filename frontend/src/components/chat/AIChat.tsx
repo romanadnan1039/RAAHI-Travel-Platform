@@ -241,7 +241,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl shadow-2xl h-full min-h-[500px] flex flex-col border border-gray-700/30 overflow-hidden backdrop-blur-xl">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl shadow-2xl h-full flex flex-col border border-gray-700/30 overflow-hidden backdrop-blur-xl">
       {/* Modern Gradient Header with Glass Effect */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -321,10 +321,11 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
       {/* Messages Area - Modern Scrollable */}
       <div 
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-4" 
+        className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4 chat-scrollbar" 
         style={{ 
           scrollbarWidth: 'thin',
-          scrollbarColor: '#566614 #1f2937'
+          scrollbarColor: '#566614 #1f2937',
+          minHeight: '300px'
         }}
       >
         <AnimatePresence mode="popLayout">
