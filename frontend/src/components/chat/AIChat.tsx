@@ -233,7 +233,7 @@ export default function AIChat({ onPackageFilter }: AIChatProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl h-full min-h-[600px] flex flex-col overflow-hidden">
+    <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl h-full min-h-[600px] flex flex-col overflow-hidden">
       {/* WhatsApp-Style Header */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
