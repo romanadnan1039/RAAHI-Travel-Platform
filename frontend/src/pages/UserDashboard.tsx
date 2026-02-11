@@ -286,11 +286,6 @@ export default function UserDashboard() {
             <div className="h-[calc(100vh-150px)] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300">
               <AIChat
                 onPackageFilter={handlePackageFilter}
-                onPackageSelect={(pkg) => {
-                  setSelectedPackage(pkg)
-                  setShowBookingModal(true)
-                  setActiveTab('packages')
-                }}
               />
             </div>
           </motion.div>
