@@ -21,18 +21,22 @@ app.post('/chat', async (req: Request, res: Response) => {
       })
     }
 
-    const result = await processTravelQuery(message)
+    // Use provided conversationId or generate new one
+    const convId = conversationId || `conv_${Date.now()}`
+    
+    const result = await processTravelQuery(message, convId)
 
     res.json({
       success: true,
       data: {
         response: result.response,
         recommendations: result.recommendations,
-        conversationId: conversationId || `conv_${Date.now()}`,
+        conversationId: result.conversationId,
+        parsedQuery: result.parsedQuery, // Include parsed query for debugging
       },
     })
   } catch (error: any) {
-    console.error('Chat error:', error)
+    console.error('❌ Chat error:', error)
     res.status(500).json({
       success: false,
       error: {
@@ -113,9 +117,28 @@ app.post('/book', async (req: Request, res: Response) => {
 })
 
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    version: '2.0.0',
+    features: [
+      'Custom NLP Query Parser',
+      'Enhanced Recommendation Engine',
+      'Multi-language Support (English + Urdu)',
+      'Conversation Context Management',
+      'Template-based Responses'
+    ]
+  })
 })
 
 app.listen(PORT, () => {
-  console.log(`AI Agent server running on port ${PORT}`)
+  console.log('\n' + '='.repeat(60))
+  console.log('🤖 RAAHI AI Agent v2.0 - Custom Intelligence')
+  console.log('='.repeat(60))
+  console.log(`✅ Server running on port ${PORT}`)
+  console.log('✅ No OpenAI dependency - 100% custom AI')
+  console.log('✅ Multi-language support: English + Urdu')
+  console.log('✅ Enhanced scoring algorithm')
+  console.log('✅ Conversation context tracking')
+  console.log('='.repeat(60) + '\n')
 })

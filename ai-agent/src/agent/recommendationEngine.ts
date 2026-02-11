@@ -1,19 +1,12 @@
 import { searchPackages } from '../services/apiClient'
-
-export interface PackageRecommendation {
-  packageId: string
-  title: string
-  destination: string
-  duration: number
-  price: number
-  rating: number
-  matchScore: number
-}
+import { PackageRecommendation } from '../types'
 
 export const findMatchingPackages = async (criteria: {
   destination?: string
   duration?: number
   budget?: number
+  travelType?: string
+  travelers?: number
 }): Promise<PackageRecommendation[]> => {
   const filters: any = {}
 
@@ -23,70 +16,116 @@ export const findMatchingPackages = async (criteria: {
 
   if (criteria.duration) {
     filters.duration = criteria.duration
-  } else if (criteria.duration === undefined) {
-    // Allow some flexibility
   }
 
   if (criteria.budget) {
     filters.maxPrice = criteria.budget
   }
 
+  console.log('🔍 Searching packages with filters:', filters)
+
   const response = await searchPackages(filters)
 
   if (!response.success || !response.data) {
+    console.warn('⚠️ No packages found or API error')
     return []
   }
 
-  const packages = response.data.packages || response.data
+  const packagesData = response.data.data || response.data.packages || response.data || []
+  const packages = Array.isArray(packagesData) ? packagesData : []
 
-  // Score and rank packages
+  console.log(`📦 Found ${packages.length} packages from database`)
+
+  // Enhanced scoring algorithm
   const scoredPackages: PackageRecommendation[] = packages.map((pkg: any) => {
     let score = 0
+    const reasons: string[] = []
 
-    // Destination match (40 points)
-    if (criteria.destination && pkg.destination.toLowerCase().includes(criteria.destination.toLowerCase())) {
-      score += 40
+    // 1. Destination match (35 points)
+    if (criteria.destination) {
+      const destMatch = pkg.destination.toLowerCase().includes(criteria.destination.toLowerCase())
+      if (destMatch) {
+        score += 35
+        reasons.push('destination match')
+      }
     }
 
-    // Duration match (30 points)
+    // 2. Duration match (25 points)
     if (criteria.duration) {
       const durationDiff = Math.abs(pkg.duration - criteria.duration)
       if (durationDiff === 0) {
-        score += 30
+        score += 25
+        reasons.push('exact duration')
       } else if (durationDiff === 1) {
-        score += 20
+        score += 18
+        reasons.push('close duration')
       } else if (durationDiff === 2) {
         score += 10
+        reasons.push('similar duration')
       }
     }
 
-    // Budget match (20 points)
+    // 3. Budget match (25 points)
     if (criteria.budget) {
-      const priceRatio = Number(pkg.price) / criteria.budget
-      if (priceRatio <= 1.0) {
-        score += 20
-      } else if (priceRatio <= 1.2) {
-        score += 15
-      } else if (priceRatio <= 1.5) {
-        score += 10
+      const price = Number(pkg.price)
+      const priceRatio = price / criteria.budget
+      
+      if (priceRatio <= 0.8) {
+        score += 25 // Well under budget
+        reasons.push('great value')
+      } else if (priceRatio <= 1.0) {
+        score += 20 // Within budget
+        reasons.push('within budget')
+      } else if (priceRatio <= 1.15) {
+        score += 12 // Slightly over
+        reasons.push('slightly over budget')
+      } else if (priceRatio <= 1.3) {
+        score += 5 // Worth considering
       }
     }
 
-    // Rating bonus (10 points)
-    score += (pkg.rating || 0) * 2
+    // 4. Rating bonus (10 points)
+    const ratingScore = (pkg.rating || 0) * 2
+    score += ratingScore
+    if (pkg.rating >= 4.5) reasons.push('highly rated')
 
-    const recommendation = {
-      ...pkg, // Include all package fields (images, includes, description, etc.)
+    // 5. Popularity bonus (5 points)
+    if (pkg.totalBookings && pkg.totalBookings > 10) {
+      score += 5
+      reasons.push('popular choice')
+    }
+
+    // 6. Travel type match (bonus 10 points)
+    if (criteria.travelType) {
+      const titleLower = pkg.title.toLowerCase()
+      if (titleLower.includes(criteria.travelType)) {
+        score += 10
+        reasons.push('type match')
+      }
+    }
+
+    // 7. Capacity match (bonus 5 points)
+    if (criteria.travelers && pkg.maxTravelers >= criteria.travelers) {
+      score += 5
+      reasons.push('capacity suitable')
+    }
+
+    // 8. Availability bonus (5 points)
+    if (pkg.isActive) {
+      score += 5
+    }
+
+    const recommendation: PackageRecommendation = {
+      ...pkg,
+      id: pkg.id,
       packageId: pkg.id,
-      id: pkg.id, // Ensure id is present
       price: Number(pkg.price),
       rating: pkg.rating || 0,
       matchScore: Math.min(100, Math.round(score)),
     }
 
-    // Ensure images array exists and has fallback
+    // Ensure images array exists
     if (!recommendation.images || recommendation.images.length === 0) {
-      console.warn(`⚠️ Package ${pkg.title} has no images, adding fallback`)
       recommendation.images = [
         'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=800&h=600&fit=crop',
         'https://images.pexels.com/photos/1118877/pexels-photo-1118877.jpeg?w=800&h=600&fit=crop',
@@ -94,19 +133,41 @@ export const findMatchingPackages = async (criteria: {
       ]
     }
 
+    console.log(`   Package: ${pkg.title} - Score: ${recommendation.matchScore}% (${reasons.join(', ')})`)
+
     return recommendation
   })
 
-  // Sort by match score and return top 3
+  // Sort by match score and return top 5 (increased from 3)
   const topRecommendations = scoredPackages
     .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 3)
+    .slice(0, 5)
 
-  // Log recommendations for debugging
-  console.log(`\n📦 Returning ${topRecommendations.length} recommendations:`)
-  topRecommendations.forEach((rec, idx) => {
-    console.log(`${idx + 1}. ${rec.title} - Match: ${rec.matchScore}%`)
-  })
+  console.log(`\n✅ Returning top ${topRecommendations.length} recommendations`)
 
   return topRecommendations
 }
+
+// Alternative packages when no exact matches
+export const findAlternativePackages = async (originalCriteria: any): Promise<PackageRecommendation[]> => {
+  console.log('🔄 Finding alternative packages...')
+  
+  // Relax criteria
+  const relaxedCriteria: any = {}
+  
+  // Keep destination if provided
+  if (originalCriteria.destination) {
+    relaxedCriteria.destination = originalCriteria.destination
+  }
+  
+  // Increase budget by 50% if provided
+  if (originalCriteria.budget) {
+    relaxedCriteria.budget = Math.round(originalCriteria.budget * 1.5)
+  }
+  
+  // Allow +/- 1 day duration flexibility
+  // Don't send duration filter to get more results
+  
+  return await findMatchingPackages(relaxedCriteria)
+}
+

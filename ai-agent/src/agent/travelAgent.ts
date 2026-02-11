@@ -1,128 +1,95 @@
-import { openai, OPENAI_MODEL } from '../config/openai'
-import { findMatchingPackages } from './recommendationEngine'
+// Custom AI Travel Agent - No OpenAI Required!
+// Uses advanced query parsing, scoring algorithms, and template-based responses
 
-export interface ParsedQuery {
-  destination?: string
-  duration?: number
-  budget?: number
-  travelers?: number
-}
+import { findMatchingPackages, findAlternativePackages } from './recommendationEngine'
+import { parseUserQuery } from './queryParser'
+import { createChatResponse } from './responseGenerator'
+import { updateContext, getOrCreateContext, mergeContextWithQuery, isRefinementQuery } from './conversationManager'
+import { ParsedQuery, PackageRecommendation } from '../types'
 
-const PAKISTANI_DESTINATIONS = [
-  'hunza', 'swat', 'naran', 'kaghan', 'skardu', 'neelum', 'kashmir',
-  'murree', 'nathia gali', 'chitral', 'kalash', 'kumrat', 'gilgit',
-  'fairy meadows', 'attabad', 'sharda', 'kel', 'kalam', 'malam jabba'
-]
+export { ParsedQuery } from '../types'
 
-export const parseUserQuery = async (query: string): Promise<ParsedQuery> => {
-  const prompt = `Extract travel information from this query. Return JSON with destination, duration (in days), budget (in PKR), and travelers (number of people).
-  
-Query: "${query}"
-
-Pakistani destinations to recognize: ${PAKISTANI_DESTINATIONS.join(', ')}
-
-Return JSON only, no other text. Example: {"destination": "Hunza", "duration": 2, "budget": 20000, "travelers": 2}`
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a travel assistant for Pakistan. Extract travel details from user queries and return JSON only.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 200,
-    })
-
-    const content = response.choices[0]?.message?.content || '{}'
-    const parsed = JSON.parse(content.trim())
-    return parsed
-  } catch (error) {
-    // Fallback parsing
-    const lowerQuery = query.toLowerCase()
-    const result: ParsedQuery = {}
-
-    // Extract destination
-    for (const dest of PAKISTANI_DESTINATIONS) {
-      if (lowerQuery.includes(dest)) {
-        result.destination = dest.charAt(0).toUpperCase() + dest.slice(1)
-        break
-      }
-    }
-
-    // Extract duration
-    const durationMatch = query.match(/(\d+)\s*(?:day|days|din)/i)
-    if (durationMatch) {
-      result.duration = parseInt(durationMatch[1])
-    }
-
-    // Extract budget
-    const budgetMatch = query.match(/(\d+)\s*(?:k|thousand|hazar)/i)
-    if (budgetMatch) {
-      result.budget = parseInt(budgetMatch[1]) * 1000
-    }
-
-    return result
-  }
-}
-
-export const generateResponse = async (
+export const processTravelQuery = async (
   query: string,
-  recommendations: any[]
-): Promise<string> => {
-  const prompt = `You are RAAHI, a friendly travel assistant for Pakistan. The user asked: "${query}"
-
-I found ${recommendations.length} package(s) for them:
-${recommendations.map((r, i) => `${i + 1}. ${r.title} - PKR ${r.price.toLocaleString()} (${r.duration} days, Match: ${r.matchScore}%)`).join('\n')}
-
-Generate a friendly, helpful response in English (or Urdu if the query was in Urdu). Mention the packages naturally and encourage them to select one.`
-
+  conversationId: string = 'default'
+) => {
+  console.log('\n' + '='.repeat(60))
+  console.log('🤖 RAAHI AI Agent - Processing Query')
+  console.log('='.repeat(60))
+  console.log('Query:', query)
+  console.log('Conversation ID:', conversationId)
+  
   try {
-    const response = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are RAAHI, a friendly travel assistant helping users find travel packages in Pakistan. Respond naturally and helpfully.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 300,
+    // Get or create conversation context
+    const context = getOrCreateContext(conversationId)
+    
+    // Parse the user's query using custom NLP
+    let parsed = parseUserQuery(query)
+    console.log('\n📋 Initial Parse:', parsed)
+    
+    // Check if this is a refinement of previous query
+    const isRefinement = isRefinementQuery(query, context)
+    
+    if (isRefinement) {
+      console.log('🔄 Detected refinement query - merging with previous context')
+      parsed = mergeContextWithQuery(context, parsed)
+      console.log('📋 Merged Parse:', parsed)
+    }
+    
+    // Update conversation context
+    updateContext(conversationId, query, parsed)
+    
+    // Find matching packages using enhanced recommendation engine
+    let recommendations: PackageRecommendation[] = await findMatchingPackages({
+      destination: parsed.destination,
+      duration: parsed.duration,
+      budget: parsed.budget,
+      travelType: parsed.travelType,
+      travelers: parsed.travelers
     })
-
-    return response.choices[0]?.message?.content || 'I found some packages for you!'
+    
+    // If no matches, try alternatives
+    if (recommendations.length === 0 && (parsed.destination || parsed.budget)) {
+      console.log('\n🔍 No exact matches, searching alternatives...')
+      recommendations = await findAlternativePackages(parsed)
+    }
+    
+    console.log(`\n📦 Final recommendations: ${recommendations.length}`)
+    
+    // Generate natural language response using templates
+    const response = createChatResponse(query, recommendations, parsed)
+    
+    console.log('\n💬 Response:', response.substring(0, 150) + '...')
+    console.log('='.repeat(60) + '\n')
+    
+    return {
+      response,
+      recommendations,
+      parsedQuery: parsed,
+      conversationId
+    }
+    
   } catch (error) {
-    return `I found ${recommendations.length} great package(s) for you! Please check the recommendations above.`
+    console.error('❌ Error processing query:', error)
+    
+    return {
+      response: 'Sorry, I encountered an error. Please try rephrasing your query or contact support.',
+      recommendations: [],
+      parsedQuery: {},
+      conversationId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
   }
 }
 
-export const processTravelQuery = async (query: string) => {
-  // Parse the query
-  const parsed = await parseUserQuery(query)
+// Legacy export for backward compatibility
+export { parseUserQuery }
 
-  // Find matching packages
-  const recommendations = await findMatchingPackages({
-    destination: parsed.destination,
-    duration: parsed.duration,
-    budget: parsed.budget,
-  })
-
-  // Generate response
-  const response = await generateResponse(query, recommendations)
-
-  return {
-    response,
-    recommendations,
-    parsedQuery: parsed,
-  }
+// Export for testing
+export const testQueryParser = (query: string) => {
+  console.log('\n🧪 Testing Query Parser')
+  console.log('Input:', query)
+  const result = parseUserQuery(query)
+  console.log('Output:', JSON.stringify(result, null, 2))
+  return result
 }
