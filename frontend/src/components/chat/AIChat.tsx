@@ -469,178 +469,96 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
                 onSelectRecommendation={handleSelectRecommendation}
               />
               
-              {/* Show Package Cards for Recommendations with Modern Styling */}
+              {/* Compact package rows — sized for the chat column */}
               {message.recommendations && message.recommendations.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-6 space-y-4"
+                  transition={{ delay: 0.12 }}
+                  className="mt-3 max-w-full space-y-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFAC3] to-[#6E6B40] uppercase tracking-wider flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#FFFAC3]" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      {message.recommendations.length} Top Matches
-                    </p>
-                    <span className="hidden text-xs text-gray-500 sm:inline">Scroll to see all →</span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {message.recommendations.map((pkg, idx) => {
-                      return (
-                        <motion.div
-                          key={pkg.id || `pkg-${idx}`}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: idx * 0.1 }}
-                          whileHover={{ scale: 1.02, y: -4 }}
-                          className="group cursor-pointer"
-                        >
-                          <div
-                            className="relative overflow-hidden rounded-2xl border border-gray-700/50 bg-gradient-to-br from-gray-800/90 to-gray-900/90 p-4 shadow-xl backdrop-blur-xl transition-all hover:border-[#566614]/70 hover:shadow-2xl hover:shadow-[#566614]/20 sm:p-5"
-                          >
-                            {/* Animated gradient overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#566614]/0 to-[#6E6B40]/0 group-hover:from-[#566614]/10 group-hover:to-[#6E6B40]/10 transition-all duration-500" />
-                            
-                            {/* Content */}
-                            <div className="relative z-10">
-                            {(pkg.images && pkg.images.length > 0) ? (
-                              <div className="relative overflow-hidden rounded-xl mb-4 group/img">
-                                <img
-                                  src={pkg.images[0]}
-                                  alt={pkg.title}
-                                  className="h-36 w-full object-cover transition-transform duration-700 group-hover/img:scale-110 sm:h-44"
-                                  onError={(e) => {
-                                    console.error(`Image failed to load for ${pkg.title}:`, pkg.images[0])
-                                    ;(e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=800&h=600&fit=crop'
-                                  }}
-                                />
-                                {/* Match score badge */}
-                                {pkg.matchScore && (
-                                  <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ delay: 0.3 + idx * 0.1 }}
-                                    className="absolute top-3 right-3 bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm flex items-center gap-1"
-                                  >
-                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    {pkg.matchScore}% Match
-                                  </motion.div>
-                                )}
-                              </div>
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#FFFAC3]/90">
+                    <svg className="h-3.5 w-3.5 shrink-0 text-[#FFFAC3]" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {message.recommendations.length} match{message.recommendations.length !== 1 ? 'es' : ''}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {message.recommendations.map((pkg, idx) => (
+                      <motion.div
+                        key={pkg.id || `pkg-${idx}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: idx * 0.05 }}
+                        className="overflow-hidden rounded-xl border border-gray-700/60 bg-[#1a1d24]/95 shadow-md"
+                      >
+                        <div className="flex gap-2.5 p-2 sm:gap-3 sm:p-2.5">
+                          <div className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-lg bg-gray-800 sm:h-[5rem] sm:w-[5rem]">
+                            {pkg.images && pkg.images.length > 0 ? (
+                              <img
+                                src={pkg.images[0]}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  ;(e.target as HTMLImageElement).src =
+                                    'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=400&h=400&fit=crop'
+                                }}
+                              />
                             ) : (
-                              <div className="relative mb-4 flex h-36 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#566614] via-[#6E6B40] to-[#566614] sm:h-44">
-                                <div className="absolute inset-0 bg-black/20" />
-                                <span className="text-white text-xl font-bold relative z-10">{pkg.destination || 'Package'}</span>
+                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#566614] to-[#6E6B40] text-[10px] font-bold text-white">
+                                {pkg.destination?.slice(0, 3) || 'PKG'}
                               </div>
                             )}
-                          <div className="space-y-3">
-                            <div>
-                              <h4 className="font-bold text-white text-base mb-2 group-hover:text-[#FFFAC3] transition-colors">{pkg.title}</h4>
-                              <div className="flex items-center flex-wrap gap-2 text-xs text-gray-400 mb-3">
-                                <span className="flex items-center gap-1 bg-gray-700/50 px-2 py-1 rounded-lg">
-                                  <svg className="w-3.5 h-3.5 text-[#FFFAC3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                  </svg>
-                                  {pkg.destination}
-                                </span>
-                                <span className="flex items-center gap-1 bg-gray-700/50 px-2 py-1 rounded-lg">
-                                  <svg className="w-3.5 h-3.5 text-[#FFFAC3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                  {pkg.duration} days
-                                </span>
-                              </div>
-                              {/* Package Includes with Icons */}
-                              {pkg.includes && pkg.includes.length > 0 && (
-                                <div className="space-y-2">
-                                  <p className="text-xs font-bold text-[#FFFAC3] flex items-center gap-1">
-                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                    What's Included:
-                                  </p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {pkg.includes.slice(0, 3).map((item, idx) => (
-                                      <motion.span
-                                        key={idx}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.4 + idx * 0.1 }}
-                                        className="bg-gradient-to-r from-gray-700/70 to-gray-600/70 px-2.5 py-1 rounded-lg text-xs text-gray-200 border border-gray-600/30"
-                                      >
-                                        ✓ {item}
-                                      </motion.span>
-                                    ))}
-                                    {pkg.includes.length > 3 && (
-                                      <span className="text-gray-400 text-xs self-center font-medium">+{pkg.includes.length - 3} more</span>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            </div>
-                            
-                            {/* Price and Actions */}
-                            <div className="relative z-10 flex flex-col gap-3 border-t border-gray-700/30 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                              <div className="min-w-0">
-                                <div className="flex items-baseline gap-2">
-                                  <p className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFAC3] to-[#6E6B40] sm:text-2xl">
-                                    PKR {Number(pkg.price).toLocaleString()}
-                                  </p>
-                                </div>
-                                {pkg.rating > 0 && (
-                                  <div className="mt-1 flex items-center gap-1">
-                                    <div className="flex">
-                                      {[...Array(5)].map((_, i) => (
-                                        <svg
-                                          key={i}
-                                          className={`h-3 w-3 ${i < Math.floor(pkg.rating) ? 'text-yellow-400' : 'text-gray-600'}`}
-                                          fill="currentColor"
-                                          viewBox="0 0 20 20"
-                                        >
-                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                      ))}
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-400">{pkg.rating.toFixed(1)}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleShowDetails(pkg)
-                                  }}
-                                  className="min-h-[44px] touch-manipulation rounded-xl border border-gray-600/50 bg-gray-700/80 px-4 py-2.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all hover:bg-gray-600/80 sm:min-h-0"
-                                >
-                                  Details
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleBookNow(pkg)
-                                  }}
-                                  className="min-h-[44px] touch-manipulation rounded-xl bg-gradient-to-r from-[#566614] to-[#6E6B40] px-4 py-2.5 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-[#566614]/30 sm:min-h-0"
-                                >
-                                  Book Now →
-                                </motion.button>
-                              </div>
-                            </div>
-                            </div>
+                            {pkg.matchScore != null && (
+                              <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 py-px text-[9px] font-bold text-[#FFFAC3]">
+                                {pkg.matchScore}%
+                              </span>
+                            )}
                           </div>
-                        </motion.div>
-                    )})}
+                          <div className="min-w-0 flex-1">
+                            <h4 className="line-clamp-2 text-left text-[13px] font-semibold leading-snug text-white sm:text-sm">
+                              {pkg.title}
+                            </h4>
+                            <p className="mt-0.5 line-clamp-1 text-[10px] text-gray-400 sm:text-[11px]">
+                              {pkg.destination} · {pkg.duration}d
+                              {pkg.includes && pkg.includes.length > 0
+                                ? ` · ${pkg.includes.slice(0, 2).join(', ')}${pkg.includes.length > 2 ? '…' : ''}`
+                                : ''}
+                            </p>
+                            <p className="mt-1 text-[13px] font-bold tabular-nums text-[#FFFAC3] sm:text-sm">
+                              PKR {Number(pkg.price).toLocaleString()}
+                              {pkg.rating > 0 && (
+                                <span className="ml-1.5 text-[10px] font-normal text-gray-500">
+                                  ★ {pkg.rating.toFixed(1)}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 border-t border-gray-700/50 p-2 pt-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleShowDetails(pkg)
+                            }}
+                            className="touch-manipulation rounded-lg border border-gray-600/70 bg-gray-800/90 py-2 text-center text-[11px] font-semibold text-gray-100 transition-colors hover:bg-gray-700/90"
+                          >
+                            Details
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleBookNow(pkg)
+                            }}
+                            className="touch-manipulation rounded-lg bg-gradient-to-r from-[#566614] to-[#6E6B40] py-2 text-center text-[11px] font-semibold text-white transition-opacity hover:opacity-95"
+                          >
+                            Book
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -772,9 +690,10 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
         />
       )}
 
-      {/* Package Details Modal */}
+      {/* Package Details Modal — compact + high z-index so it sits above the chat shell */}
       {showDetailsModal && (
         <PackageDetailsModal
+          variant="compact"
           packageId={selectedPackageId}
           onClose={() => {
             setShowDetailsModal(false)

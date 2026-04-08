@@ -7,9 +7,17 @@ interface PackageDetailsModalProps {
   packageId: string | null
   onClose: () => void
   onBook?: (pkg: Package) => void
+  /** Tighter layout + higher z-index for use inside the AI chat overlay */
+  variant?: 'default' | 'compact'
 }
 
-export default function PackageDetailsModal({ packageId, onClose, onBook }: PackageDetailsModalProps) {
+export default function PackageDetailsModal({
+  packageId,
+  onClose,
+  onBook,
+  variant = 'default',
+}: PackageDetailsModalProps) {
+  const isCompact = variant === 'compact'
   const [pkg, setPkg] = useState<Package | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -45,18 +53,27 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+        className={`fixed inset-0 flex items-center justify-center bg-black/50 ${
+          isCompact ? 'z-[1100] p-3 sm:p-4' : 'z-50 p-4'
+        }`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose()
+        }}
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+          className={`flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl ${
+            isCompact ? 'max-h-[88dvh] max-w-md sm:max-w-lg' : 'max-h-[90dvh] max-w-3xl'
+          }`}
         >
-          <div className="bg-[#566614] text-white p-4 rounded-t-lg flex justify-between items-center flex-shrink-0">
-            <h2 className="text-xl font-bold" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
+          <div className="flex flex-shrink-0 items-center justify-between rounded-t-xl bg-[#566614] p-3 text-white sm:p-4">
+            <h2
+              className={`font-bold ${isCompact ? 'text-base sm:text-lg' : 'text-xl'}`}
+              style={{ fontFamily: 'LEMON MILK, sans-serif' }}
+            >
               Package Details
             </h2>
             <button
@@ -69,11 +86,19 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
             </button>
           </div>
 
-          <div className="overflow-y-auto flex-1 booking-modal-scroll p-6">
+          <div
+            className={`booking-modal-scroll flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-6'}`}
+          >
             {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#566614]"></div>
-                <p className="mt-4 text-gray-600">Loading package details...</p>
+              <div className={`text-center ${isCompact ? 'py-8' : 'py-12'}`}>
+                <div
+                  className={`inline-block animate-spin rounded-full border-b-2 border-[#566614] ${
+                    isCompact ? 'h-9 w-9' : 'h-12 w-12'
+                  }`}
+                />
+                <p className={`mt-3 text-gray-600 ${isCompact ? 'text-sm' : ''}`}>
+                  Loading package details…
+                </p>
               </div>
             ) : error ? (
               <div className="text-center py-12">
@@ -91,50 +116,82 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
                 </button>
               </div>
             ) : pkg ? (
-              <div className="flex flex-col lg:flex-row gap-6">
+              <div className={isCompact ? 'flex flex-col gap-4' : 'flex flex-col gap-6 lg:flex-row'}>
                 {/* Left Side - Big Image Gallery */}
-                <div className="lg:w-1/2">
+                <div className={isCompact ? 'w-full shrink-0' : 'lg:w-1/2'}>
                   {pkg.images && pkg.images.length > 0 ? (
-                    <div className="space-y-3 sticky top-0">
+                    <div className={isCompact ? 'space-y-2' : 'sticky top-0 space-y-3'}>
                       {/* Main Large Image */}
-                      <div className="relative group">
+                      <div className="group relative">
                         <img
                           src={pkg.images[0]}
                           alt={pkg.title}
-                          className="w-full h-[400px] object-cover rounded-xl shadow-lg"
+                          className={`w-full rounded-xl object-cover shadow-lg ${
+                            isCompact ? 'h-40 max-h-[36vh] sm:h-44' : 'h-[400px]'
+                          }`}
                           onError={(e) => {
-                            ;(e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=800&h=600&fit=crop'
+                            ;(e.target as HTMLImageElement).src =
+                              'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=800&h=600&fit=crop'
                           }}
                         />
                         {/* Destination Badge */}
-                        <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <div
+                          className={`absolute flex items-center rounded-lg bg-black/70 text-white backdrop-blur-sm ${
+                            isCompact
+                              ? 'left-2 top-2 space-x-1.5 px-2 py-1 text-xs'
+                              : 'left-4 top-4 space-x-2 px-4 py-2'
+                          }`}
+                        >
+                          <svg
+                            className={isCompact ? 'h-3.5 w-3.5' : 'h-5 w-5'}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
                           </svg>
                           <span className="font-semibold">{pkg.destination}</span>
                         </div>
                         {/* Rating Badge */}
                         {pkg.rating > 0 && (
-                          <div className="absolute top-4 right-4 bg-[#566614]/90 backdrop-blur-sm text-white px-3 py-2 rounded-lg flex items-center space-x-1">
-                            <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <div
+                            className={`absolute flex items-center rounded-lg bg-[#566614]/90 text-white backdrop-blur-sm ${
+                              isCompact
+                                ? 'right-2 top-2 space-x-0.5 px-2 py-1 text-xs'
+                                : 'right-4 top-4 space-x-1 px-3 py-2'
+                            }`}
+                          >
+                            <svg
+                              className={`text-yellow-400 ${isCompact ? 'h-3.5 w-3.5' : 'h-5 w-5'}`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                             <span className="font-bold">{pkg.rating.toFixed(1)}</span>
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Thumbnail Images */}
                       {pkg.images.length > 1 && (
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                           {pkg.images.slice(1, 4).map((img, idx) => (
                             <img
                               key={idx}
                               src={img}
                               alt={`${pkg.title} - Image ${idx + 2}`}
-                              className="w-full h-24 object-cover rounded-lg hover:opacity-80 transition-opacity cursor-pointer shadow-md"
+                              className={`w-full rounded-lg object-cover shadow-md transition-opacity hover:opacity-80 ${
+                                isCompact ? 'h-14' : 'h-24'
+                              }`}
                               onError={(e) => {
-                                ;(e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1118877/pexels-photo-1118877.jpeg?w=800&h=600&fit=crop'
+                                ;(e.target as HTMLImageElement).src =
+                                  'https://images.pexels.com/photos/1118877/pexels-photo-1118877.jpeg?w=800&h=600&fit=crop'
                               }}
                             />
                           ))}
@@ -142,34 +199,59 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
                       )}
                     </div>
                   ) : (
-                    <div className="w-full h-[400px] bg-gradient-to-br from-[#566614] to-[#6E6B40] rounded-xl flex items-center justify-center shadow-lg">
+                    <div
+                      className={`flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-lg ${
+                        isCompact ? 'h-40' : 'h-[400px]'
+                      }`}
+                    >
                       <div className="text-center text-white">
-                        <svg className="w-20 h-20 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className={`mx-auto mb-2 opacity-50 ${isCompact ? 'h-12 w-12' : 'mb-4 h-20 w-20'}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
-                        <p className="text-2xl font-bold">{pkg.destination}</p>
-                        <p className="text-sm opacity-75 mt-2">No images available</p>
+                        <p className={`font-bold ${isCompact ? 'text-lg' : 'text-2xl'}`}>{pkg.destination}</p>
+                        <p className="mt-1 text-sm opacity-75">No images available</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Right Side - Package Details */}
-                <div className="lg:w-1/2 space-y-5 overflow-y-auto max-h-[600px] pr-2">
+                <div
+                  className={
+                    isCompact
+                      ? 'w-full space-y-3'
+                      : 'max-h-[600px] space-y-5 overflow-y-auto pr-2 lg:w-1/2'
+                  }
+                >
                   {/* Package Title */}
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
+                    <h3
+                      className={`font-bold text-gray-900 ${isCompact ? 'mb-2 text-lg leading-snug' : 'mb-3 text-3xl'}`}
+                      style={{ fontFamily: 'LEMON MILK, sans-serif' }}
+                    >
                       {pkg.title}
                     </h3>
-                    <div className="flex items-center space-x-4 text-gray-600">
-                      <span className="flex items-center bg-gray-100 px-3 py-1.5 rounded-full">
-                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div
+                      className={`flex flex-wrap items-center gap-2 text-gray-600 ${isCompact ? 'text-xs' : 'space-x-4'}`}
+                    >
+                      <span className="flex items-center rounded-full bg-gray-100 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                        <svg className="mr-1 h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {pkg.duration} days
                       </span>
-                      <span className="flex items-center bg-gray-100 px-3 py-1.5 rounded-full">
-                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <span className="flex items-center rounded-full bg-gray-100 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                        <svg className="mr-1 h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         {pkg.minTravelers}-{pkg.maxTravelers} travelers
@@ -183,25 +265,41 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
                   </div>
 
                   {/* Price Section */}
-                  <div className="bg-gradient-to-r from-[#566614] to-[#6E6B40] p-5 rounded-xl text-white shadow-lg">
+                  <div
+                    className={`rounded-xl bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow-lg ${
+                      isCompact ? 'p-3' : 'p-5'
+                    }`}
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         {pkg.originalPrice && Number(pkg.originalPrice) > Number(pkg.price) ? (
                           <div>
-                            <span className="text-lg line-through opacity-75 mr-2">
+                            <span
+                              className={`mr-2 line-through opacity-75 ${isCompact ? 'text-sm' : 'text-lg'}`}
+                            >
                               PKR {Number(pkg.originalPrice).toLocaleString()}
                             </span>
-                            <div className="text-4xl font-bold">
+                            <div className={`font-bold ${isCompact ? 'text-2xl' : 'text-4xl'}`}>
                               PKR {Number(pkg.price).toLocaleString()}
                             </div>
-                            <p className="text-sm opacity-90 mt-1">per person · Save {Math.round(((Number(pkg.originalPrice) - Number(pkg.price)) / Number(pkg.originalPrice)) * 100)}%</p>
+                            <p className={`mt-1 opacity-90 ${isCompact ? 'text-xs' : 'text-sm'}`}>
+                              per person · Save{' '}
+                              {Math.round(
+                                ((Number(pkg.originalPrice) - Number(pkg.price)) /
+                                  Number(pkg.originalPrice)) *
+                                  100
+                              )}
+                              %
+                            </p>
                           </div>
                         ) : (
                           <div>
-                            <div className="text-4xl font-bold">
+                            <div className={`font-bold ${isCompact ? 'text-2xl' : 'text-4xl'}`}>
                               PKR {Number(pkg.price).toLocaleString()}
                             </div>
-                            <p className="text-sm opacity-90 mt-1">per person</p>
+                            <p className={`mt-1 opacity-90 ${isCompact ? 'text-xs' : 'text-sm'}`}>
+                              per person
+                            </p>
                           </div>
                         )}
                       </div>
@@ -211,24 +309,46 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
                   {/* Description */}
                   {pkg.description && (
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">About This Package</h4>
-                      <p className="text-gray-700 leading-relaxed">{pkg.description}</p>
+                      <h4
+                        className={`font-bold text-gray-900 ${isCompact ? 'mb-1.5 text-sm' : 'mb-2 text-lg'}`}
+                      >
+                        About This Package
+                      </h4>
+                      <p
+                        className={`leading-relaxed text-gray-700 ${isCompact ? 'text-sm' : ''}`}
+                      >
+                        {pkg.description}
+                      </p>
                     </div>
                   )}
 
                   {/* What's Included */}
                   {pkg.includes && pkg.includes.length > 0 && (
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                      <h4
+                        className={`mb-2 flex items-center font-bold text-gray-900 sm:mb-3 ${
+                          isCompact ? 'text-sm' : 'text-lg'
+                        }`}
+                      >
                         <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         What's Included
                       </h4>
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className={`grid grid-cols-1 gap-2 ${isCompact ? 'gap-1.5' : ''}`}>
                         {pkg.includes.map((item, idx) => (
-                          <div key={idx} className="flex items-start text-gray-700 bg-green-50 p-2 rounded-lg">
-                            <svg className="w-5 h-5 mr-2 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div
+                            key={idx}
+                            className={`flex items-start rounded-lg bg-green-50 text-gray-700 ${
+                              isCompact ? 'p-1.5 text-xs' : 'p-2'
+                            }`}
+                          >
+                            <svg
+                              className={`mr-2 flex-shrink-0 text-green-600 ${isCompact ? 'mt-0.5 h-3.5 w-3.5' : 'mt-0.5 h-5 w-5'}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             <span>{item}</span>
@@ -332,24 +452,34 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-3 pt-4 border-t border-gray-200 sticky bottom-0 bg-white pb-2">
+                  <div
+                    className={`sticky bottom-0 flex gap-2 border-t border-gray-200 bg-white pt-3 sm:gap-3 sm:space-x-0 ${
+                      isCompact ? 'pb-1' : 'pb-2 pt-4'
+                    }`}
+                  >
                     <button
+                      type="button"
                       onClick={onClose}
-                      className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                      className={`flex-1 rounded-lg border-2 border-gray-300 font-semibold transition-colors hover:bg-gray-50 ${
+                        isCompact ? 'px-3 py-2.5 text-sm' : 'px-6 py-3'
+                      }`}
                     >
                       Close
                     </button>
                     {onBook && (
                       <motion.button
+                        type="button"
                         onClick={() => {
                           onBook(pkg)
                           onClose()
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1 px-6 py-3 bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white rounded-lg hover:from-[#6E6B40] hover:to-[#566614] transition-all font-bold shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#566614] to-[#6E6B40] font-bold text-white shadow-lg transition-all hover:from-[#6E6B40] hover:to-[#566614] hover:shadow-xl ${
+                          isCompact ? 'px-3 py-2.5 text-sm' : 'px-6 py-3'
+                        }`}
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={isCompact ? 'h-4 w-4' : 'h-5 w-5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         <span>Book Now</span>
