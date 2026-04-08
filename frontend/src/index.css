@@ -156,11 +156,12 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Reduced motion support */
+/* Reduced motion: soften transitions site-wide. Traveler AI classes are excluded so CSS matches
+   Framer Motion (MotionConfig reducedMotion="never") and prod looks like localhost for UI polish. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.traveler-avatar-float):not(.traveler-eye):not(.traveler-map-sway):not(.traveler-star-pulse),
+  *:not(.traveler-avatar-float):not(.traveler-eye):not(.traveler-map-sway):not(.traveler-star-pulse)::before,
+  *:not(.traveler-avatar-float):not(.traveler-eye):not(.traveler-map-sway):not(.traveler-star-pulse)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
