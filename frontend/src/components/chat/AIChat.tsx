@@ -17,6 +17,8 @@ interface Message {
 interface AIChatProps {
   onPackageFilter?: (filters: any) => void
   onPackageSelect?: (pkg: Package) => void
+  /** When set, header shows a close control (floating chat widget). */
+  onClose?: () => void
 }
 
 // Modern suggestion chips with emojis
@@ -29,7 +31,7 @@ const SUGGESTION_CHIPS = [
   { label: '🌙 Weekend getaway', query: 'Weekend packages' },
 ]
 
-export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps) {
+export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AIChatProps) {
   const { isAuthenticated, user } = useAuthStore()
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -42,7 +44,8 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | undefined>()
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  /** Scroll only this element — never use scrollIntoView (it scrolls the whole page). */
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [shouldScroll, setShouldScroll] = useState(false)
   const isUserScrolling = useRef(false)
@@ -81,21 +84,30 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
       .catch(() => setAiAvailable(false))
   }
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current && shouldScroll) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
+  const scrollChatPanelToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    const el = messagesScrollRef.current
+    if (!el) return
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollTo({ top: el.scrollHeight, behavior })
+      })
+    })
   }
 
   useEffect(() => {
-    if (shouldScroll) {
-      scrollToBottom()
-      setShouldScroll(false)
-    }
+    if (!shouldScroll) return
+    scrollChatPanelToBottom('smooth')
+    setShouldScroll(false)
   }, [messages, shouldScroll])
 
+  /** Keep "AI is analyzing" in view without moving the browser window */
   useEffect(() => {
-    const messagesContainer = messagesEndRef.current?.parentElement
+    if (!loading) return
+    scrollChatPanelToBottom('smooth')
+  }, [loading])
+
+  useEffect(() => {
+    const messagesContainer = messagesScrollRef.current
     if (!messagesContainer) return
 
     const handleScroll = () => {
@@ -335,15 +347,31 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           </div>
         </div>
         
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="relative z-10 hidden flex-shrink-0 text-right sm:block"
-        >
-          <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">RAAHI</div>
-          <div className="text-xs font-semibold text-[#FFFAC3]/90">Travel AI</div>
-        </motion.div>
+        <div className="relative z-10 flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+          {!onClose && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="hidden text-right sm:block"
+            >
+              <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">RAAHI</div>
+              <div className="text-xs font-semibold text-[#FFFAC3]/90">Travel AI</div>
+            </motion.div>
+          )}
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="touch-manipulation rounded-xl p-2.5 text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Close assistant"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
       </motion.div>
 
       {aiAvailable === false && (
@@ -409,7 +437,8 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
       {/* Messages Area - Modern Scrollable */}
       <div 
-        className="chat-scrollbar chat-scroll-touch min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-4 sm:py-4" 
+        ref={messagesScrollRef}
+        className="chat-scrollbar chat-scroll-touch min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 py-3 sm:px-4 sm:py-4 [overflow-anchor:none]" 
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
@@ -647,7 +676,6 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
             </div>
           </motion.div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input row — same pattern as mobile chat apps (field + round send) */}
@@ -705,7 +733,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
         </form>
         {!(showSuggestions && messages.length === 1) && (
           <p className="relative z-10 mt-2 text-center text-[11px] text-gray-500">
-            Tip: switch to <span className="text-gray-400">Browse</span> above to see all packages
+            Tip: close this chat to use filters and the full package list
           </p>
         )}
       </motion.div>

@@ -7,7 +7,7 @@ import PackageGrid from '../components/packages/PackageGrid'
 import BookingModal from '../components/packages/BookingModal'
 import FilterSidebar from '../components/packages/FilterSidebar'
 import { packageApi, bookingApi } from '../services/api'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Package, Booking } from '../types'
 
 interface FilterState {
@@ -22,8 +22,8 @@ interface FilterState {
 
 export default function UserDashboard() {
   const { user: _user } = useAuthStore()
-  /** On small screens: show AI assistant OR browse (packages/filters); desktop shows both. Default browse so packages are visible first. */
-  const [mobilePanel, setMobilePanel] = useState<'assistant' | 'browse'>('browse')
+  /** Floating chat widget (Intercom-style) */
+  const [chatOpen, setChatOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'packages' | 'bookings'>('packages')
   const [packages, setPackages] = useState<Package[]>([])
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])
@@ -61,6 +61,20 @@ export default function UserDashboard() {
       loadBookings()
     }
   }, [activeTab])
+
+  useEffect(() => {
+    if (!chatOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setChatOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [chatOpen])
 
   const loadPackages = async () => {
     try {
@@ -254,7 +268,7 @@ export default function UserDashboard() {
     
     setFilters(newFilters)
     setActiveTab('packages')
-    setMobilePanel('browse')
+    setChatOpen(false)
   }
 
   const loadBookings = async () => {
@@ -277,65 +291,9 @@ export default function UserDashboard() {
 
       <div className="flex-1 container mx-auto px-3 py-4 sm:px-4 md:py-6">
         {/* Main Container - Premium Card Layout */}
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 h-full min-h-0">
-          {/* Mobile / tablet: switch between AI assistant and browse (packages + filters) */}
-          <div className="flex shrink-0 lg:hidden rounded-xl bg-white/95 p-0.5 shadow ring-1 ring-gray-200/90">
-            <button
-              type="button"
-              onClick={() => setMobilePanel('assistant')}
-              className={`flex-1 touch-manipulation rounded-lg px-2 py-2 text-center text-[11px] font-bold leading-tight transition-colors sm:px-3 sm:py-2.5 sm:text-sm ${
-                mobilePanel === 'assistant'
-                  ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={{ fontFamily: 'LEMON MILK, sans-serif' }}
-            >
-              Assistant
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobilePanel('browse')}
-              className={`flex-1 touch-manipulation rounded-lg px-2 py-2 text-center text-[11px] font-bold leading-tight transition-colors sm:px-3 sm:py-2.5 sm:text-sm ${
-                mobilePanel === 'browse'
-                  ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={{ fontFamily: 'LEMON MILK, sans-serif' }}
-            >
-              Browse
-            </button>
-          </div>
-
-          {/* LEFT: AI Chat Card - Premium Glass Effect */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-            className={`flex min-h-0 w-full max-w-[min(22.5rem,100%)] flex-1 flex-col mx-auto lg:mx-0 lg:w-[min(22.5rem,100%)] lg:max-w-[22.5rem] lg:flex-none ${
-              mobilePanel === 'browse' ? 'hidden lg:flex' : ''
-            }`}
-          >
-            <div
-              className="flex max-h-[min(80dvh,680px)] min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] transition-shadow duration-300 sm:min-h-[min(400px,52dvh)] lg:h-[calc(100vh-160px)] lg:min-h-[560px] lg:max-h-none"
-            >
-              <AIChat
-                onPackageFilter={handlePackageFilter}
-                onPackageSelect={(pkg) => {
-                  setSelectedPackage(pkg)
-                  setShowBookingModal(true)
-                  setActiveTab('packages')
-                  setMobilePanel('browse')
-                }}
-              />
-            </div>
-          </motion.div>
-
-          {/* MIDDLE + RIGHT: filters + main (hidden on mobile when Assistant tab active) */}
-          <div
-            className={`flex min-h-0 flex-1 flex-col gap-4 min-w-0 lg:flex-row md:gap-6 ${
-              mobilePanel === 'assistant' ? 'hidden lg:flex' : 'flex'
-            }`}
-          >
+        <div className="flex flex-col gap-4 md:gap-6 h-full min-h-0 lg:flex-row">
+          {/* Filters + main content — full width; AI opens from floating button */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 md:gap-6 lg:flex-row">
           {/* MIDDLE: Filters Card - Premium White Card (Only show when browsing packages) */}
           {activeTab === 'packages' && (
             <motion.div 
@@ -613,6 +571,66 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Floating assistant launcher + chat panel */}
+      <AnimatePresence>
+        {chatOpen && (
+          <>
+            <motion.div
+              role="presentation"
+              className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setChatOpen(false)}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="raahi-chat-widget-title"
+              className="fixed left-2 right-2 top-[8vh] z-[61] flex max-h-[min(84dvh,720px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e12] shadow-[0_25px_80px_-12px_rgba(0,0,0,0.55)] sm:left-auto sm:right-6 sm:top-auto sm:bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:w-[min(22.5rem,calc(100vw-3rem))] sm:max-h-[min(640px,85dvh)] sm:rounded-3xl"
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            >
+              <span id="raahi-chat-widget-title" className="sr-only">
+                RAAHI travel assistant chat
+              </span>
+              <AIChat
+                onClose={() => setChatOpen(false)}
+                onPackageFilter={handlePackageFilter}
+                onPackageSelect={(pkg) => {
+                  setSelectedPackage(pkg)
+                  setShowBookingModal(true)
+                  setActiveTab('packages')
+                  setChatOpen(false)
+                }}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {!chatOpen && (
+        <motion.button
+          type="button"
+          onClick={() => setChatOpen(true)}
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-[0_8px_30px_rgba(86,102,20,0.45)] ring-2 ring-white/20 transition-transform hover:scale-105 active:scale-95"
+          aria-label="Open travel assistant"
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+        >
+          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+            />
+          </svg>
+        </motion.button>
+      )}
 
       <Footer />
 
