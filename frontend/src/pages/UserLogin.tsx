@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { authApi } from '../services/api'
+import { getApiErrorMessage } from '../utils/apiError'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 
@@ -36,8 +37,8 @@ export default function UserLogin() {
       } else {
         setError(response.error?.message || 'Something went wrong')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'An error occurred')
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'An error occurred. Please try again.'))
     } finally {
       setLoading(false)
     }
