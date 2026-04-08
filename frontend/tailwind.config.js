@@ -4,6 +4,13 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  /* Never drop Traveler AI avatar classes (custom utilities in index.css) */
+  safelist: [
+    "traveler-avatar-float",
+    "traveler-eye",
+    "traveler-map-sway",
+    "traveler-star-pulse",
+  ],
   theme: {
     extend: {
       colors: {
