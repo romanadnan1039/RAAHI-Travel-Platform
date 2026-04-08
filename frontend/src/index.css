@@ -1,9 +1,9 @@
+/* @import must be first (before @tailwind) for Vite/CSS spec compliance */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import LEMON MILK Font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* LEMON MILK Font - using Google Fonts alternative or system fonts */
 @font-face {
