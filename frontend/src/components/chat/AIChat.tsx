@@ -185,7 +185,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: response.data.response,
+          content: response.data.response?.trim() || 'Here are some packages that might match.',
           recommendations: recommendations,
         }
         setMessages((prev) => [...prev, assistantMessage])
@@ -196,18 +196,18 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
         }
 
         if (onPackageFilter && userInput) {
-          const filters: any = {}
+          const filters: Record<string, string> = {}
           if (userInput.toLowerCase().includes('hunza')) filters.destination = 'Hunza'
           if (userInput.toLowerCase().includes('swat')) filters.destination = 'Swat'
           if (userInput.toLowerCase().includes('naran')) filters.destination = 'Naran'
           if (userInput.toLowerCase().includes('skardu')) filters.destination = 'Skardu'
-          
+
           const priceMatch = userInput.match(/(\d+)k|(\d+)\s*k|under\s*(\d+)/i)
           if (priceMatch) {
-            const price = parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3] || '0') * 1000
+            const price = parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3] || '0', 10) * 1000
             filters.maxPrice = price.toString()
           }
-          
+
           const durationMatch = userInput.match(/(\d+)\s*days?|(\d+)\s*din/i)
           if (durationMatch) {
             filters.duration = (durationMatch[1] || durationMatch[2] || '').toString()
@@ -217,6 +217,15 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
             onPackageFilter(filters)
           }
         }
+      } else {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content:
+            'The assistant returned an unexpected response. Please try again or use Browse to search packages.',
+        }
+        setMessages((prev) => [...prev, assistantMessage])
+        setShouldScroll(true)
       }
     } catch (error: any) {
       console.error('Chat error:', error)

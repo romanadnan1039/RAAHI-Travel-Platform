@@ -253,23 +253,30 @@ export default function UserDashboard() {
     })
   }
 
-  const handlePackageFilter = (criteria: { destination?: string; duration?: number; budget?: number }) => {
-    console.log('Package filter from AI:', criteria)
+  /** Sync Browse filters from AI — do not close the chat (users need to read the reply and package cards). */
+  const handlePackageFilter = (criteria: {
+    destination?: string
+    duration?: number | string
+    budget?: number
+    maxPrice?: string
+  }) => {
     const newFilters = { ...filters }
-    
+
     if (criteria.destination) {
       newFilters.destination = criteria.destination
     }
-    if (criteria.duration) {
-      newFilters.duration = criteria.duration.toString()
+    if (criteria.duration != null && criteria.duration !== '') {
+      newFilters.duration = String(criteria.duration)
     }
-    if (criteria.budget) {
-      newFilters.maxPrice = criteria.budget.toString()
+    if (criteria.budget != null) {
+      newFilters.maxPrice = String(criteria.budget)
     }
-    
+    if (criteria.maxPrice) {
+      newFilters.maxPrice = criteria.maxPrice
+    }
+
     setFilters(newFilters)
     setActiveTab('packages')
-    setChatOpen(false)
   }
 
   const loadBookings = async () => {
@@ -584,7 +591,9 @@ export default function UserDashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setChatOpen(false)}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setChatOpen(false)
+              }}
             />
             <motion.div
               key="raahi-chat-panel"
@@ -604,6 +613,7 @@ export default function UserDashboard() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              onClick={(e) => e.stopPropagation()}
             >
               <span id="raahi-chat-widget-title" className="sr-only">
                 RAAHI travel assistant chat
