@@ -53,7 +53,7 @@ export default function PackageDetailsModal({ packageId, onClose, onBook }: Pack
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col"
+          className="flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
         >
           <div className="bg-[#566614] text-white p-4 rounded-t-lg flex justify-between items-center flex-shrink-0">
             <h2 className="text-xl font-bold" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>

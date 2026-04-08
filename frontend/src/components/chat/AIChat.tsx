@@ -241,37 +241,37 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl shadow-2xl h-full flex flex-col border border-gray-700/30 backdrop-blur-xl">
+    <div className="flex h-full min-h-0 min-w-0 flex-col rounded-3xl border border-gray-700/30 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 shadow-2xl backdrop-blur-xl">
       {/* Modern Gradient Header with Glass Effect */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative bg-gradient-to-r from-[#566614]/20 via-[#6E6B40]/20 to-[#566614]/20 backdrop-blur-md border-b border-gray-700/30 px-6 py-4 flex items-center justify-between flex-shrink-0"
+        className="relative flex flex-shrink-0 items-center justify-between border-b border-gray-700/30 bg-gradient-to-r from-[#566614]/20 via-[#6E6B40]/20 to-[#566614]/20 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4"
       >
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#566614]/10 to-[#6E6B40]/10 animate-gradient-x"></div>
         
-        <div className="relative z-10 flex items-center space-x-4">
+        <div className="relative z-10 flex min-w-0 items-center space-x-3 sm:space-x-4">
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 360 }}
             transition={{ duration: 0.5 }}
-            className="w-12 h-12 bg-gradient-to-br from-[#566614] to-[#6E6B40] rounded-2xl flex items-center justify-center shadow-lg shadow-[#566614]/20"
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-lg shadow-[#566614]/20 sm:h-12 sm:w-12"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 text-white sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </motion.div>
-          <div>
-            <h2 className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-bold tracking-tight text-white sm:text-lg" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
               RAAHI AI Assistant
             </h2>
             <div className="flex items-center space-x-2">
               <motion.div 
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"
+                className="h-2 w-2 flex-shrink-0 rounded-full bg-green-400 shadow-lg shadow-green-400/50"
               />
-              <span className="text-xs text-gray-300 font-medium">Powered by Custom AI</span>
+              <span className="text-[11px] font-medium text-gray-300 sm:text-xs">Powered by Custom AI</span>
             </div>
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="relative z-10 text-right"
+          className="relative z-10 hidden flex-shrink-0 text-right sm:block"
         >
           <div className="text-xs text-gray-400">Response Time</div>
           <div className="text-sm font-bold text-[#FFFAC3]">&lt; 2s</div>
@@ -294,12 +294,12 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ delay: 0.4 }}
-          className="px-6 pt-4 pb-2 bg-gradient-to-b from-gray-900/50 to-transparent"
+          className="bg-gradient-to-b from-gray-900/50 to-transparent px-3 pb-2 pt-3 sm:px-6 sm:pt-4"
         >
-          <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 sm:mb-3 sm:text-xs">
             ✨ Try these popular queries
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin] sm:flex-wrap">
             {SUGGESTION_CHIPS.map((chip, index) => (
               <motion.button
                 key={index}
@@ -308,8 +308,9 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                 transition={{ delay: 0.5 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
+                type="button"
                 onClick={() => handleSuggestionClick(chip.query)}
-                className="group relative bg-gradient-to-r from-gray-800/60 to-gray-700/60 hover:from-[#566614]/20 hover:to-[#6E6B40]/20 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-700/50 hover:border-[#566614]/50 transition-all shadow-lg hover:shadow-[#566614]/20"
+                className="group relative shrink-0 snap-start touch-manipulation rounded-xl border border-gray-700/50 bg-gradient-to-r from-gray-800/60 to-gray-700/60 px-3 py-2 text-xs font-medium text-white shadow-lg transition-all hover:border-[#566614]/50 hover:from-[#566614]/20 hover:to-[#6E6B40]/20 hover:shadow-[#566614]/20 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 <span className="relative z-10">{chip.label}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#566614]/0 to-[#6E6B40]/0 group-hover:from-[#566614]/10 group-hover:to-[#6E6B40]/10 rounded-xl transition-all" />
@@ -321,12 +322,10 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
       {/* Messages Area - Modern Scrollable */}
       <div 
-        className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4 chat-scrollbar" 
+        className="chat-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-6 sm:py-4" 
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
-          minHeight: '250px',
-          flex: '1 1 auto'
         }}
       >
         <AnimatePresence mode="popLayout">
@@ -358,17 +357,10 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                       </svg>
                       {message.recommendations.length} Top Matches
                     </p>
-                    <span className="text-xs text-gray-500">Scroll to see all →</span>
+                    <span className="hidden text-xs text-gray-500 sm:inline">Scroll to see all →</span>
                   </div>
                   <div className="grid grid-cols-1 gap-4">
                     {message.recommendations.map((pkg, idx) => {
-                      // Debug log to check images
-                      console.log(`Recommendation ${idx + 1}: ${pkg.title}`, {
-                        hasImages: !!pkg.images,
-                        imageCount: pkg.images ? pkg.images.length : 0,
-                        firstImage: pkg.images && pkg.images[0] ? pkg.images[0].substring(0, 50) : 'none'
-                      })
-                      
                       return (
                         <motion.div
                           key={pkg.id || `pkg-${idx}`}
@@ -379,7 +371,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                           className="group cursor-pointer"
                         >
                           <div
-                            className="relative bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-2xl p-5 border border-gray-700/50 hover:border-[#566614]/70 transition-all shadow-xl hover:shadow-2xl hover:shadow-[#566614]/20 overflow-hidden"
+                            className="relative overflow-hidden rounded-2xl border border-gray-700/50 bg-gradient-to-br from-gray-800/90 to-gray-900/90 p-4 shadow-xl backdrop-blur-xl transition-all hover:border-[#566614]/70 hover:shadow-2xl hover:shadow-[#566614]/20 sm:p-5"
                           >
                             {/* Animated gradient overlay */}
                             <div className="absolute inset-0 bg-gradient-to-br from-[#566614]/0 to-[#6E6B40]/0 group-hover:from-[#566614]/10 group-hover:to-[#6E6B40]/10 transition-all duration-500" />
@@ -391,7 +383,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                                 <img
                                   src={pkg.images[0]}
                                   alt={pkg.title}
-                                  className="w-full h-44 object-cover transition-transform duration-700 group-hover/img:scale-110"
+                                  className="h-36 w-full object-cover transition-transform duration-700 group-hover/img:scale-110 sm:h-44"
                                   onError={(e) => {
                                     console.error(`Image failed to load for ${pkg.title}:`, pkg.images[0])
                                     ;(e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1578750/pexels-photo-1578750.jpeg?w=800&h=600&fit=crop'
@@ -413,7 +405,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                                 )}
                               </div>
                             ) : (
-                              <div className="w-full h-44 bg-gradient-to-br from-[#566614] via-[#6E6B40] to-[#566614] rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+                              <div className="relative mb-4 flex h-36 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#566614] via-[#6E6B40] to-[#566614] sm:h-44">
                                 <div className="absolute inset-0 bg-black/20" />
                                 <span className="text-white text-xl font-bold relative z-10">{pkg.destination || 'Package'}</span>
                               </div>
@@ -466,20 +458,20 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                             </div>
                             
                             {/* Price and Actions */}
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-700/30 relative z-10">
-                              <div>
+                            <div className="relative z-10 flex flex-col gap-3 border-t border-gray-700/30 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                              <div className="min-w-0">
                                 <div className="flex items-baseline gap-2">
-                                  <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFAC3] to-[#6E6B40]">
+                                  <p className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFAC3] to-[#6E6B40] sm:text-2xl">
                                     PKR {Number(pkg.price).toLocaleString()}
                                   </p>
                                 </div>
                                 {pkg.rating > 0 && (
-                                  <div className="flex items-center gap-1 mt-1">
+                                  <div className="mt-1 flex items-center gap-1">
                                     <div className="flex">
                                       {[...Array(5)].map((_, i) => (
                                         <svg
                                           key={i}
-                                          className={`w-3 h-3 ${i < Math.floor(pkg.rating) ? 'text-yellow-400' : 'text-gray-600'}`}
+                                          className={`h-3 w-3 ${i < Math.floor(pkg.rating) ? 'text-yellow-400' : 'text-gray-600'}`}
                                           fill="currentColor"
                                           viewBox="0 0 20 20"
                                         >
@@ -487,30 +479,32 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
                                         </svg>
                                       ))}
                                     </div>
-                                    <span className="text-xs text-gray-400 font-medium">{pkg.rating.toFixed(1)}</span>
+                                    <span className="text-xs font-medium text-gray-400">{pkg.rating.toFixed(1)}</span>
                                   </div>
                                 )}
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handleShowDetails(pkg)
                                   }}
-                                  className="bg-gray-700/80 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-600/80 transition-all shadow-lg border border-gray-600/50"
+                                  className="min-h-[44px] touch-manipulation rounded-xl border border-gray-600/50 bg-gray-700/80 px-4 py-2.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all hover:bg-gray-600/80 sm:min-h-0"
                                 >
                                   Details
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handleBookNow(pkg)
                                   }}
-                                  className="bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-[#566614]/30 transition-all"
+                                  className="min-h-[44px] touch-manipulation rounded-xl bg-gradient-to-r from-[#566614] to-[#6E6B40] px-4 py-2.5 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-[#566614]/30 sm:min-h-0"
                                 >
                                   Book Now →
                                 </motion.button>
@@ -573,20 +567,21 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent backdrop-blur-xl border-t border-gray-700/30 p-6 flex-shrink-0"
+        className="relative flex-shrink-0 border-t border-gray-700/30 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl sm:p-6"
       >
         {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#566614]/5 to-transparent pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#566614]/5 to-transparent" />
         
-        <form onSubmit={handleSubmit} className="relative z-10 flex gap-3">
-          <div className="flex-1 relative group">
+        <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <div className="group relative min-w-0 flex-1">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything about Pakistani destinations..."
-              className="w-full px-5 py-4 pr-12 bg-gray-800/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#566614]/50 focus:border-[#566614]/70 transition-all shadow-lg group-hover:border-gray-600/50"
+              className="w-full touch-manipulation rounded-2xl border-2 border-gray-700/50 bg-gray-800/80 px-4 py-3.5 pr-12 text-base text-white placeholder-gray-400 shadow-lg backdrop-blur-sm transition-all focus:border-[#566614]/70 focus:outline-none focus:ring-2 focus:ring-[#566614]/50 group-hover:border-gray-600/50 sm:px-5 sm:py-4"
               disabled={loading}
+              enterKeyHint="send"
             />
             {input && (
               <motion.button
@@ -615,7 +610,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
             disabled={loading || !input.trim()}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:shadow-[#566614]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold flex items-center justify-center min-w-[65px] group relative overflow-hidden"
+            className="group relative flex min-h-[48px] w-full touch-manipulation items-center justify-center rounded-2xl bg-gradient-to-r from-[#566614] to-[#6E6B40] px-6 py-3 font-bold text-white transition-all hover:shadow-xl hover:shadow-[#566614]/30 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0 sm:min-w-[65px] sm:w-auto sm:self-stretch sm:py-4"
           >
             {/* Shimmer effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -634,17 +629,25 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           </motion.button>
         </form>
         
-        {/* Hint text with icons */}
+        {/* Hint text — short on mobile, full from sm+ */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-500"
+          className="mt-2 text-center text-[11px] leading-snug text-gray-500 sm:hidden"
         >
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+          Try: Hunza, Swat, budget trips…
+        </motion.div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-3 hidden items-center justify-center gap-2 text-xs text-gray-500 sm:flex"
+        >
+          <svg className="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
-          <span>Try: "Hunza under 30k" • "Family Murree trip" • "Sasta Naran package"</span>
+          <span className="text-center">Try: &quot;Hunza under 30k&quot; · &quot;Family Murree trip&quot; · &quot;Sasta Naran package&quot;</span>
         </motion.div>
       </motion.div>
 

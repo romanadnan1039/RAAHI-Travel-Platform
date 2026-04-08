@@ -24,7 +24,7 @@ export default function ChatMessage({ message, onSelectRecommendation: _onSelect
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[90%] rounded-2xl px-3 py-2.5 sm:max-w-[85%] sm:px-4 sm:py-3 ${
           isUser
             ? 'bg-gray-700 text-white rounded-br-md'
             : 'bg-gray-800/80 backdrop-blur-sm text-gray-100 rounded-bl-md border border-gray-700/50'
@@ -45,7 +45,7 @@ export default function ChatMessage({ message, onSelectRecommendation: _onSelect
             <span className="text-xs font-medium text-[#FFFAC3]">AI Assistant</span>
           </div>
         )}
-        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        <p className="break-words text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
       </div>
     </motion.div>
   )

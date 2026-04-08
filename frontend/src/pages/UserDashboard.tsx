@@ -22,6 +22,8 @@ interface FilterState {
 
 export default function UserDashboard() {
   const { user: _user } = useAuthStore()
+  /** On small screens: show AI assistant OR browse (packages/filters); desktop shows both. Default browse so packages are visible first. */
+  const [mobilePanel, setMobilePanel] = useState<'assistant' | 'browse'>('browse')
   const [activeTab, setActiveTab] = useState<'packages' | 'bookings'>('packages')
   const [packages, setPackages] = useState<Package[]>([])
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])
@@ -252,6 +254,7 @@ export default function UserDashboard() {
     
     setFilters(newFilters)
     setActiveTab('packages')
+    setMobilePanel('browse')
   }
 
   const loadBookings = async () => {
@@ -272,38 +275,76 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-[#FFFAC3]/20 via-white to-[#566614]/5 flex flex-col">
       <Navbar />
 
-      <div className="flex-1 container mx-auto px-4 py-6">
+      <div className="flex-1 container mx-auto px-3 py-4 sm:px-4 md:py-6">
         {/* Main Container - Premium Card Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 h-full">
-          
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 h-full min-h-0">
+          {/* Mobile / tablet: switch between AI assistant and browse (packages + filters) */}
+          <div className="flex lg:hidden rounded-2xl bg-white/90 p-1 shadow-md ring-1 ring-gray-200/80">
+            <button
+              type="button"
+              onClick={() => setMobilePanel('assistant')}
+              className={`flex-1 touch-manipulation rounded-xl px-3 py-2.5 text-center text-xs font-bold transition-colors sm:text-sm ${
+                mobilePanel === 'assistant'
+                  ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              style={{ fontFamily: 'LEMON MILK, sans-serif' }}
+            >
+              Assistant
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobilePanel('browse')}
+              className={`flex-1 touch-manipulation rounded-xl px-3 py-2.5 text-center text-xs font-bold transition-colors sm:text-sm ${
+                mobilePanel === 'browse'
+                  ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              style={{ fontFamily: 'LEMON MILK, sans-serif' }}
+            >
+              Browse
+            </button>
+          </div>
+
           {/* LEFT: AI Chat Card - Premium Glass Effect */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="w-full lg:w-[400px] flex-shrink-0"
+            className={`w-full min-h-0 flex-shrink-0 lg:w-[400px] ${
+              mobilePanel === 'browse' ? 'hidden min-h-0 lg:block' : 'flex min-h-0 flex-col'
+            }`}
           >
-            <div className="h-[calc(100vh-160px)] min-h-[650px] rounded-2xl shadow-2xl ring-1 ring-gray-900/10 hover:shadow-3xl transition-shadow duration-300 flex flex-col">
+            <div
+              className="flex min-h-0 flex-col overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gray-900/10 transition-shadow duration-300 hover:shadow-3xl max-h-[70dvh] min-h-[min(420px,55dvh)] sm:min-h-[min(520px,65dvh)] lg:max-h-none lg:h-[calc(100vh-160px)] lg:min-h-[560px]"
+            >
               <AIChat
                 onPackageFilter={handlePackageFilter}
                 onPackageSelect={(pkg) => {
                   setSelectedPackage(pkg)
                   setShowBookingModal(true)
                   setActiveTab('packages')
+                  setMobilePanel('browse')
                 }}
               />
             </div>
           </motion.div>
 
+          {/* MIDDLE + RIGHT: filters + main (hidden on mobile when Assistant tab active) */}
+          <div
+            className={`flex min-h-0 flex-1 flex-col gap-4 min-w-0 lg:flex-row md:gap-6 ${
+              mobilePanel === 'assistant' ? 'hidden lg:flex' : 'flex'
+            }`}
+          >
           {/* MIDDLE: Filters Card - Premium White Card (Only show when browsing packages) */}
           {activeTab === 'packages' && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="w-full lg:w-[320px] flex-shrink-0"
+              className="w-full min-h-0 flex-shrink-0 lg:w-[320px]"
             >
-              <div className="h-[calc(100vh-150px)] rounded-2xl bg-white overflow-hidden shadow-xl ring-1 ring-gray-900/5 hover:shadow-2xl transition-shadow duration-300">
+              <div className="max-h-[min(85dvh,720px)] min-h-[240px] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-gray-900/5 transition-shadow duration-300 hover:shadow-2xl lg:h-[calc(100vh-150px)] lg:max-h-none">
                 <FilterSidebar
                   filters={filters}
                   onFilterChange={handleFilterChange}
@@ -319,29 +360,30 @@ export default function UserDashboard() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex-1 min-w-0"
+            className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
-            <div className="h-[calc(100vh-150px)] rounded-2xl bg-white overflow-hidden shadow-xl ring-1 ring-gray-900/5 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex max-h-[min(90dvh,800px)] min-h-[min(50vh,420px)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-gray-900/5 transition-shadow duration-300 hover:shadow-2xl lg:h-[calc(100vh-150px)] lg:max-h-none">
               <div className="h-full flex flex-col">
               {/* Premium Header with Gradient Tabs */}
-              <div className="flex-shrink-0 bg-gradient-to-r from-[#566614]/5 to-[#6E6B40]/5 border-b border-gray-200/50 px-6 py-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#566614] to-[#6E6B40] flex items-center justify-center shadow-lg">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex-shrink-0 border-b border-gray-200/50 bg-gradient-to-r from-[#566614]/5 to-[#6E6B40]/5 px-4 py-4 sm:px-6 sm:py-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center space-x-3">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-lg sm:h-10 sm:w-10">
+                      <svg className="h-5 w-5 text-white sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-[#566614] to-[#6E6B40] bg-clip-text text-transparent" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
+                    <h1 className="truncate text-lg font-bold bg-gradient-to-r from-[#566614] to-[#6E6B40] bg-clip-text text-transparent sm:text-2xl" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
                       {activeTab === 'packages' ? 'Browse Packages' : 'My Bookings'}
                     </h1>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex w-full flex-shrink-0 gap-2 sm:w-auto sm:justify-end sm:space-x-3">
                     <motion.button
+                      type="button"
                       onClick={() => setActiveTab('packages')}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center space-x-2 shadow-md ${
+                      className={`flex flex-1 touch-manipulation items-center justify-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-md transition-all sm:flex-initial sm:px-6 sm:py-3 ${
                         activeTab === 'packages'
                           ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -354,10 +396,11 @@ export default function UserDashboard() {
                       <span>BROWSE</span>
                     </motion.button>
                     <motion.button
+                      type="button"
                       onClick={() => setActiveTab('bookings')}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center space-x-2 shadow-md ${
+                      className={`flex flex-1 touch-manipulation items-center justify-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-md transition-all sm:flex-initial sm:px-6 sm:py-3 ${
                         activeTab === 'bookings'
                           ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -374,7 +417,7 @@ export default function UserDashboard() {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-6" style={{
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6" style={{
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#566614 #f3f4f6'
               }}>
@@ -567,6 +610,7 @@ export default function UserDashboard() {
             </div>
           </div>
         </motion.div>
+          </div>
         </div>
       </div>
 
