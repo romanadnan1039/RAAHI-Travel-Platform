@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { useAuthStore } from '../store/authStore'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
@@ -25,8 +24,6 @@ export default function UserDashboard() {
   const { user: _user } = useAuthStore()
   /** Floating chat widget (Intercom-style) */
   const [chatOpen, setChatOpen] = useState(false)
-  /** Portal to document.body so fixed + z-index are not clipped by layout/transform parents */
-  const [chatPortalReady, setChatPortalReady] = useState(false)
   const [activeTab, setActiveTab] = useState<'packages' | 'bookings'>('packages')
   const [packages, setPackages] = useState<Package[]>([])
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])
@@ -64,10 +61,6 @@ export default function UserDashboard() {
       loadBookings()
     }
   }, [activeTab])
-
-  useEffect(() => {
-    setChatPortalReady(true)
-  }, [])
 
   useEffect(() => {
     if (!chatOpen) return
@@ -293,7 +286,7 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFAC3]/20 via-white to-[#566614]/5 flex flex-col">
+    <div className="relative isolate min-h-screen bg-gradient-to-br from-[#FFFAC3]/20 via-white to-[#566614]/5 flex flex-col">
       <Navbar />
 
       <div className="flex-1 container mx-auto px-3 py-4 sm:px-4 md:py-6">
@@ -579,70 +572,67 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {chatPortalReady &&
-        createPortal(
+      {/* Assistant: inline fixed + high z-index (portal + delayed mount hid the FAB for some users) */}
+      <AnimatePresence mode="sync">
+        {chatOpen && (
           <>
-            <AnimatePresence>
-              {chatOpen && (
-                <>
-                  <motion.div
-                    role="presentation"
-                    className="fixed inset-0 z-[1000] bg-black/45 backdrop-blur-[2px]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setChatOpen(false)}
-                  />
-                  <motion.div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="raahi-chat-widget-title"
-                    className="fixed left-2 right-2 top-[8vh] z-[1001] flex max-h-[min(84dvh,720px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e12] shadow-[0_25px_80px_-12px_rgba(0,0,0,0.55)] sm:left-auto sm:right-6 sm:top-auto sm:bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:w-[min(22.5rem,calc(100vw-3rem))] sm:max-h-[min(640px,85dvh)] sm:rounded-3xl"
-                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                  >
-                    <span id="raahi-chat-widget-title" className="sr-only">
-                      RAAHI travel assistant chat
-                    </span>
-                    <AIChat
-                      onClose={() => setChatOpen(false)}
-                      onPackageFilter={handlePackageFilter}
-                      onPackageSelect={(pkg) => {
-                        setSelectedPackage(pkg)
-                        setShowBookingModal(true)
-                        setActiveTab('packages')
-                        setChatOpen(false)
-                      }}
-                    />
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-
-            {!chatOpen && (
-              <motion.button
-                type="button"
-                onClick={() => setChatOpen(true)}
-                className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-[1002] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-[0_8px_30px_rgba(86,102,20,0.45)] ring-2 ring-white/20 transition-transform hover:scale-105 active:scale-95"
-                aria-label="Open travel assistant"
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.94 }}
-              >
-                <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                  />
-                </svg>
-              </motion.button>
-            )}
-          </>,
-          document.body
+            <motion.div
+              key="raahi-chat-backdrop"
+              role="presentation"
+              className="fixed inset-0 z-[1000] bg-black/45 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setChatOpen(false)}
+            />
+            <motion.div
+              key="raahi-chat-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="raahi-chat-widget-title"
+              className="fixed left-2 right-2 top-[8vh] z-[1001] flex max-h-[min(84dvh,720px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e12] shadow-[0_25px_80px_-12px_rgba(0,0,0,0.55)] sm:left-auto sm:right-6 sm:top-auto sm:bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:w-[min(22.5rem,calc(100vw-3rem))] sm:max-h-[min(640px,85dvh)] sm:rounded-3xl"
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            >
+              <span id="raahi-chat-widget-title" className="sr-only">
+                RAAHI travel assistant chat
+              </span>
+              <AIChat
+                onClose={() => setChatOpen(false)}
+                onPackageFilter={handlePackageFilter}
+                onPackageSelect={(pkg) => {
+                  setSelectedPackage(pkg)
+                  setShowBookingModal(true)
+                  setActiveTab('packages')
+                  setChatOpen(false)
+                }}
+              />
+            </motion.div>
+          </>
         )}
+      </AnimatePresence>
+
+      {!chatOpen && (
+        <motion.button
+          type="button"
+          onClick={() => setChatOpen(true)}
+          className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-[1002] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-[0_8px_30px_rgba(86,102,20,0.45)] ring-2 ring-white/20 transition-transform hover:scale-105 active:scale-95"
+          aria-label="Open travel assistant"
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+        >
+          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+            />
+          </svg>
+        </motion.button>
+      )}
 
       <Footer />
 
