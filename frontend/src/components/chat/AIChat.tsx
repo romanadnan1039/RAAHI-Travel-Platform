@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { aiApi, packageApi } from '../../services/api'
 import ChatMessage from './ChatMessage'
+import TravelerAiAvatar from './TravelerAiAvatar'
 import BookingModal from '../packages/BookingModal'
 import PackageDetailsModal from '../packages/PackageDetailsModal'
 import { useAuthStore } from '../../store/authStore'
@@ -38,7 +39,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
       id: '1',
       role: 'assistant',
       content:
-        "👋 Hi! Ask in your own words — e.g. a place, budget, or number of days. Or tap a quick suggestion below.",
+        "👋 Hi — I'm your AI travel agent for Pakistan. Ask in your own words (place, budget, days) or tap a suggestion below.",
     },
   ])
   const [input, setInput] = useState('')
@@ -311,22 +312,20 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#566614]/10 to-[#6E6B40]/10 animate-gradient-x"></div>
         
-        <div className="relative z-10 flex min-w-0 items-center gap-2.5 sm:gap-4">
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-md shadow-[#566614]/20 sm:h-11 sm:w-11"
+        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+            className="min-w-0 flex-1"
           >
-            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </motion.div>
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-bold leading-tight text-white sm:text-base" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
-              <span className="sm:hidden">Travel assistant</span>
-              <span className="hidden sm:inline">RAAHI AI Assistant</span>
-            </h2>
-            <div className="mt-0.5 flex items-center gap-1.5">
+            <TravelerAiAvatar
+              size="md"
+              variant="panel"
+              title="AI Assistant"
+              subtitle="RAAHI · travel guide"
+              className="max-w-[min(100%,14rem)] sm:max-w-none"
+            />
+            <div className="mt-1.5 flex items-center gap-1.5 pl-0.5">
               {aiAvailable === null ? (
                 <>
                   <span className="h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-gray-500" />
@@ -344,7 +343,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
         
         <div className="relative z-10 flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
@@ -438,7 +437,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
       {/* Messages Area - Modern Scrollable */}
       <div 
         ref={messagesScrollRef}
-        className="chat-scrollbar chat-scroll-touch min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 py-3 sm:px-4 sm:py-4 [overflow-anchor:none]" 
+        className="chat-scrollbar chat-scroll-touch min-h-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 py-3 sm:space-y-6 sm:px-4 sm:py-4 [overflow-anchor:none]" 
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
@@ -448,10 +447,10 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
           {messages.map((message) => (
             <motion.div
               key={message.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={{ opacity: 0, y: 16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
             >
               <ChatMessage
                 message={message}
@@ -637,41 +636,45 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
           ))}
         </AnimatePresence>
 
-        {/* Modern Loading Indicator with Animation */}
+        {/* Typing row — app-style: avatar + bubble */}
         {loading && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex justify-start"
+            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+            className="flex w-full items-end gap-2"
           >
-            <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-2xl p-5 max-w-xs border border-[#566614]/30 shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="flex space-x-1.5">
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity }}
-                    className="w-2.5 h-2.5 bg-gradient-to-r from-[#566614] to-[#6E6B40] rounded-full"
+            <div className="mb-1 shrink-0">
+              <TravelerAiAvatar size="sm" />
+            </div>
+            <div className="flex max-w-[min(16rem,85%)] flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-[#FFFAC3]/80">AI guide</span>
+              <div className="rounded-[1.35rem] rounded-bl-md border border-white/[0.07] bg-[#2a2d36]/95 px-4 py-3 shadow-inner backdrop-blur-sm">
+                <div className="flex items-center gap-1">
+                  <motion.span
+                    className="inline-block h-2 w-2 rounded-full bg-emerald-400/90"
+                    animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 0.55, repeat: Infinity, ease: 'easeInOut' }}
                   />
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.1 }}
-                    className="w-2.5 h-2.5 bg-gradient-to-r from-[#566614] to-[#6E6B40] rounded-full"
+                  <motion.span
+                    className="inline-block h-2 w-2 rounded-full bg-emerald-400/90"
+                    animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 0.55, repeat: Infinity, ease: 'easeInOut', delay: 0.12 }}
                   />
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-                    className="w-2.5 h-2.5 bg-gradient-to-r from-[#566614] to-[#6E6B40] rounded-full"
+                  <motion.span
+                    className="inline-block h-2 w-2 rounded-full bg-emerald-400/90"
+                    animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 0.55, repeat: Infinity, ease: 'easeInOut', delay: 0.24 }}
                   />
                 </div>
-                <p className="text-sm text-gray-300 font-medium">AI is analyzing...</p>
-              </div>
-              <div className="mt-3 h-1 bg-gray-700/50 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[#566614] to-[#6E6B40]"
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <motion.p
+                  className="mt-2 text-xs font-medium text-gray-400"
+                  animate={{ opacity: [0.65, 1, 0.65] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  Searching trips &amp; places…
+                </motion.p>
               </div>
             </div>
           </motion.div>
@@ -682,6 +685,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="relative flex-shrink-0 border-t border-white/[0.06] bg-gradient-to-t from-[#0c0e12] via-gray-900/95 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-4"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#566614]/5 to-transparent" />
@@ -691,13 +695,15 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
             <label htmlFor="raahi-chat-input" className="sr-only">
               Message to travel assistant
             </label>
-            <input
+            <motion.input
               id="raahi-chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Message… e.g. Hunza under 25k"
               autoComplete="off"
+              whileFocus={{ scale: 1.01 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               className="w-full touch-manipulation rounded-[1.35rem] border border-gray-600/80 bg-gray-800/95 px-4 py-3 pr-10 text-base text-white shadow-inner placeholder:text-gray-500 focus:border-[#566614] focus:outline-none focus:ring-2 focus:ring-[#566614]/40"
               disabled={loading || aiAvailable === false}
               enterKeyHint="send"

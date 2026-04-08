@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/authStore'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import AIChat from '../components/chat/AIChat'
+import TravelerAiAvatar from '../components/chat/TravelerAiAvatar'
 import PackageGrid from '../components/packages/PackageGrid'
 import BookingModal from '../components/packages/BookingModal'
 import FilterSidebar from '../components/packages/FilterSidebar'
@@ -590,7 +591,15 @@ export default function UserDashboard() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="raahi-chat-widget-title"
-              className="fixed left-2 right-2 top-[8vh] z-[1001] flex max-h-[min(84dvh,720px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e12] shadow-[0_25px_80px_-12px_rgba(0,0,0,0.55)] sm:left-auto sm:right-6 sm:top-auto sm:bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:w-[min(22.5rem,calc(100vw-3rem))] sm:max-h-[min(640px,85dvh)] sm:rounded-3xl"
+              className="fixed z-[1001] flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0e12] shadow-[0_25px_80px_-12px_rgba(0,0,0,0.55)]
+              left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))]
+              top-[max(0.5rem,env(safe-area-inset-top))]
+              h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem)]
+              max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-0.5rem)]
+              sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-auto sm:bottom-[max(1rem,env(safe-area-inset-bottom))]
+              sm:h-[min(640px,85dvh)]
+              sm:max-h-[min(640px,85dvh)]
+              sm:w-[min(22.5rem,calc(100vw-3rem))] sm:rounded-3xl"
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -615,23 +624,44 @@ export default function UserDashboard() {
       </AnimatePresence>
 
       {!chatOpen && (
-        <motion.button
-          type="button"
-          onClick={() => setChatOpen(true)}
-          className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-[1002] flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-[0_8px_30px_rgba(86,102,20,0.45)] ring-2 ring-white/20 transition-transform hover:scale-105 active:scale-95"
-          aria-label="Open travel assistant"
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
+        <motion.div
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-[1002] flex flex-row items-center gap-2 sm:gap-3"
+          initial={false}
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-            />
-          </svg>
-        </motion.button>
+          <div className="pointer-events-auto relative max-w-[calc(100vw-2rem)]">
+            <motion.button
+              type="button"
+              onClick={() => setChatOpen(true)}
+              className="group relative z-10 flex min-h-[3.5rem] items-center gap-1 overflow-hidden rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] py-1.5 pl-2 pr-3 text-white shadow-[0_8px_30px_rgba(86,102,20,0.45)] ring-2 ring-white/25 sm:gap-2 sm:py-2 sm:pl-2.5 sm:pr-4"
+              aria-label="Open AI Assistant — travel chat"
+              initial={false}
+              animate={{
+                boxShadow: [
+                  '0 8px 30px rgba(86,102,20,0.45)',
+                  '0 8px 36px rgba(255,250,195,0.2)',
+                  '0 8px 30px rgba(86,102,20,0.45)',
+                ],
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              whileHover={{
+                scale: 1.06,
+                y: -3,
+                boxShadow:
+                  '0 18px 50px rgba(86,102,20,0.55), 0 0 0 1px rgba(255,250,195,0.35), 0 0 28px rgba(255,250,195,0.25)',
+                transition: { type: 'spring', stiffness: 420, damping: 22 },
+              }}
+              whileTap={{ scale: 0.96, y: 0 }}
+            >
+              <span
+                className="pointer-events-none absolute inset-0 -translate-x-full rounded-full bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition duration-500 ease-out group-hover:translate-x-full group-hover:opacity-100 motion-reduce:transition-none"
+                aria-hidden
+              />
+              <TravelerAiAvatar size="md" title="AI Assistant" subtitle="Tap to chat" />
+            </motion.button>
+          </div>
+        </motion.div>
       )}
 
       <Footer />

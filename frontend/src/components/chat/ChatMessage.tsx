@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import type { Package } from '../../types'
+import TravelerAiAvatar from './TravelerAiAvatar'
 
 interface Message {
   id: string
@@ -18,35 +19,51 @@ export default function ChatMessage({ message, onSelectRecommendation: _onSelect
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: isUser ? 20 : -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      initial={{ opacity: 0, y: 14, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+      className={`flex w-full max-w-full gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end`}
     >
-      <div
-        className={`rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 ${
-          isUser
-            ? 'max-w-[min(22rem,88%)] rounded-br-md bg-gradient-to-br from-[#4b5563] to-[#374151] text-white'
-            : 'max-w-[min(19rem,92%)] rounded-bl-md border border-white/[0.07] bg-[#1a1d24]/95 text-gray-100 shadow-lg shadow-black/20 backdrop-blur-sm sm:max-w-[min(20rem,88%)]'
-        }`}
-        style={{
-          boxShadow: isUser 
-            ? '0 4px 14px rgba(0, 0, 0, 0.35)' 
-            : '0 4px 20px rgba(0, 0, 0, 0.25)'
-        }}
-      >
-        {!isUser && (
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-5 h-5 bg-gradient-to-br from-[#566614] to-[#6E6B40] rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-            </div>
-            <span className="text-xs font-medium text-[#FFFAC3]">AI Assistant</span>
-          </div>
-        )}
-        <p className="break-words text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+      {!isUser && (
+        <div className="mb-1 shrink-0">
+          <TravelerAiAvatar size="sm" />
+        </div>
+      )}
+
+      <div className={`flex min-w-0 flex-1 flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+        <span
+          className={`mb-0.5 text-[10px] font-bold uppercase tracking-wide ${
+            isUser ? 'text-gray-500' : 'text-[#FFFAC3]/90'
+          }`}
+        >
+          {isUser ? 'You' : 'AI guide'}
+        </span>
+        <div
+          className={`rounded-[1.35rem] px-3.5 py-2.5 sm:px-4 sm:py-3 ${
+            isUser
+              ? 'max-w-[min(22rem,88%)] rounded-br-md bg-gradient-to-br from-[#4b5563] to-[#374151] text-white'
+              : 'max-w-[min(19rem,92%)] rounded-bl-md border border-white/[0.08] bg-[#252830]/95 text-gray-100 shadow-lg shadow-black/25 backdrop-blur-sm sm:max-w-[min(20rem,88%)]'
+          }`}
+          style={{
+            boxShadow: isUser
+              ? '0 4px 16px rgba(0, 0, 0, 0.35)'
+              : '0 6px 24px rgba(0, 0, 0, 0.28)',
+          }}
+        >
+          <p className="break-words text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+        </div>
       </div>
+
+      {isUser && (
+        <motion.div
+          className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-xs font-bold text-white shadow-md ring-2 ring-white/10"
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+        >
+          U
+        </motion.div>
+      )}
     </motion.div>
   )
 }

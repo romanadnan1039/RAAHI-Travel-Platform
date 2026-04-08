@@ -20,6 +20,84 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
   }
+
+  /* Soft ring around AI chat launcher */
+  @keyframes ai-launcher-ring {
+    0% {
+      transform: translate(-50%, -50%) scale(0.92);
+      opacity: 0.55;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1.35);
+      opacity: 0;
+    }
+  }
+  .ai-launcher-ring {
+    animation: ai-launcher-ring 2.2s ease-out infinite;
+  }
+
+  /* Traveler AI avatar — CSS only so dev/prod (Vercel) match; Framer SVG sub-nodes can minify badly */
+  @keyframes traveler-avatar-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+  .traveler-avatar-float {
+    animation: traveler-avatar-float 2.8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes traveler-eye-blink {
+    0%,
+    96%,
+    100% {
+      opacity: 1;
+    }
+    97%,
+    98% {
+      opacity: 0.15;
+    }
+  }
+  .traveler-eye {
+    animation: traveler-eye-blink 2.8s ease-in-out infinite;
+  }
+
+  @keyframes traveler-map-sway {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    33% {
+      transform: rotate(6deg);
+    }
+    66% {
+      transform: rotate(-4deg);
+    }
+  }
+  .traveler-map-sway {
+    transform-origin: 48px 38px;
+    animation: traveler-map-sway 2.2s ease-in-out infinite;
+  }
+
+  @keyframes traveler-star-pulse {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+  .traveler-star-pulse {
+    transform-origin: 52px 18px;
+    animation: traveler-star-pulse 1.6s ease-in-out infinite;
+  }
 }
 
 /* LEMON MILK Font - using Google Fonts alternative or system fonts */
