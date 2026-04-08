@@ -5,6 +5,7 @@ import PackageGrid from '../components/packages/PackageGrid'
 import FilterSidebar from '../components/packages/FilterSidebar'
 import PackageDetailsModal from '../components/packages/PackageDetailsModal'
 import { packageApi } from '../services/api'
+import { getApiBaseUrl } from '../config/env'
 import type { Package } from '../types'
 
 interface FilterState {
@@ -59,7 +60,20 @@ export default function PackageList() {
       }
     } catch (error: any) {
       console.error('Failed to load packages:', error)
-      setError(error.response?.data?.error?.message || 'Failed to connect to server. Make sure backend is running.')
+      const apiMsg = error.response?.data?.error?.message
+      const isNetwork =
+        !error.response &&
+        (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('Network'))
+      let origin = ''
+      try {
+        origin = new URL(getApiBaseUrl()).origin
+      } catch {
+        origin = '(invalid VITE_API_URL)'
+      }
+      const networkHint = isNetwork
+        ? ` Request URL: ${origin}/api — set VITE_API_URL on Vercel (Production) to your Railway HTTPS URL (with or without /api), redeploy, and ensure Railway FRONTEND_URL includes this site.`
+        : ''
+      setError(apiMsg || `Failed to connect to server.${networkHint}`)
     } finally {
       setLoading(false)
     }

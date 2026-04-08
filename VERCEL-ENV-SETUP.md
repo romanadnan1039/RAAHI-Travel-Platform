@@ -6,6 +6,13 @@ The frontend is built with **Vite**: `VITE_*` values are **baked in at build tim
 
 If you see **“API URL not set for production”**, the last Vercel build did not receive `VITE_API_URL`. Add the variables below and **Redeploy** (env changes apply only on a new build).
 
+## Checklist (most common mistakes)
+
+1. **Project → Settings → General → Root Directory** must be **`frontend`** if your repo is the monorepo (not only `frontend` files at repo root). If Root Directory is wrong, builds can succeed but env may not apply as expected.
+2. **Variable names** must be exactly: `VITE_API_URL`, `VITE_WS_URL` (case-sensitive).
+3. **Environment**: enable for **Production** (not only Preview). After any change, **Redeploy**.
+4. **Value**: `VITE_API_URL` may be `https://YOUR-SERVICE.up.railway.app` **or** `https://YOUR-SERVICE.up.railway.app/api` — the app normalizes to always use `/api` as the API base path.
+
 ## 1. Vercel → Environment Variables
 
 Open **Vercel** → your project → **Settings** → **Environment Variables**.
