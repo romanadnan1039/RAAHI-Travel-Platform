@@ -279,11 +279,11 @@ export default function UserDashboard() {
         {/* Main Container - Premium Card Layout */}
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6 h-full min-h-0">
           {/* Mobile / tablet: switch between AI assistant and browse (packages + filters) */}
-          <div className="flex lg:hidden rounded-2xl bg-white/90 p-1 shadow-md ring-1 ring-gray-200/80">
+          <div className="flex shrink-0 lg:hidden rounded-xl bg-white/95 p-0.5 shadow ring-1 ring-gray-200/90">
             <button
               type="button"
               onClick={() => setMobilePanel('assistant')}
-              className={`flex-1 touch-manipulation rounded-xl px-3 py-2.5 text-center text-xs font-bold transition-colors sm:text-sm ${
+              className={`flex-1 touch-manipulation rounded-lg px-2 py-2 text-center text-[11px] font-bold leading-tight transition-colors sm:px-3 sm:py-2.5 sm:text-sm ${
                 mobilePanel === 'assistant'
                   ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
                   : 'text-gray-600 hover:bg-gray-100'
@@ -295,7 +295,7 @@ export default function UserDashboard() {
             <button
               type="button"
               onClick={() => setMobilePanel('browse')}
-              className={`flex-1 touch-manipulation rounded-xl px-3 py-2.5 text-center text-xs font-bold transition-colors sm:text-sm ${
+              className={`flex-1 touch-manipulation rounded-lg px-2 py-2 text-center text-[11px] font-bold leading-tight transition-colors sm:px-3 sm:py-2.5 sm:text-sm ${
                 mobilePanel === 'browse'
                   ? 'bg-gradient-to-r from-[#566614] to-[#6E6B40] text-white shadow'
                   : 'text-gray-600 hover:bg-gray-100'
@@ -311,12 +311,12 @@ export default function UserDashboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className={`w-full min-h-0 flex-shrink-0 lg:w-[400px] ${
-              mobilePanel === 'browse' ? 'hidden min-h-0 lg:block' : 'flex min-h-0 flex-col'
+            className={`flex min-h-0 w-full max-w-[min(22.5rem,100%)] flex-1 flex-col mx-auto lg:mx-0 lg:w-[min(22.5rem,100%)] lg:max-w-[22.5rem] lg:flex-none ${
+              mobilePanel === 'browse' ? 'hidden lg:flex' : ''
             }`}
           >
             <div
-              className="flex min-h-0 flex-col overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gray-900/10 transition-shadow duration-300 hover:shadow-3xl max-h-[70dvh] min-h-[min(420px,55dvh)] sm:min-h-[min(520px,65dvh)] lg:max-h-none lg:h-[calc(100vh-160px)] lg:min-h-[560px]"
+              className="flex max-h-[min(80dvh,680px)] min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] transition-shadow duration-300 sm:min-h-[min(400px,52dvh)] lg:h-[calc(100vh-160px)] lg:min-h-[560px] lg:max-h-none"
             >
               <AIChat
                 onPackageFilter={handlePackageFilter}

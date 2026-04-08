@@ -35,13 +35,15 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
     {
       id: '1',
       role: 'assistant',
-      content: "👋 Hello! I'm your RAAHI AI travel assistant. I can help you find perfect packages in seconds! Try the suggestions below or ask me anything about travel in Pakistan.",
+      content:
+        "👋 Hi! Ask in your own words — e.g. a place, budget, or number of days. Or tap a quick suggestion below.",
     },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | undefined>()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [shouldScroll, setShouldScroll] = useState(false)
   const isUserScrolling = useRef(false)
   const scrollTimeoutRef = useRef<number | undefined>()
@@ -50,6 +52,34 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(true)
+  /** null = checking; true/false from GET /api/ai/status */
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    aiApi
+      .getStatus()
+      .then((r) => {
+        if (!cancelled && r.success && r.data) setAiAvailable(!!r.data.available)
+      })
+      .catch(() => {
+        if (!cancelled) setAiAvailable(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const recheckAiStatus = () => {
+    setAiAvailable(null)
+    aiApi
+      .getStatus()
+      .then((r) => {
+        if (r.success && r.data) setAiAvailable(!!r.data.available)
+        else setAiAvailable(false)
+      })
+      .catch(() => setAiAvailable(false))
+  }
 
   const scrollToBottom = () => {
     if (messagesEndRef.current && shouldScroll) {
@@ -89,15 +119,12 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
   // Handle suggestion chip click
   const handleSuggestionClick = (query: string) => {
+    if (aiAvailable === false || loading) return
     setInput(query)
     setShowSuggestions(false)
-    // Auto-submit after a tiny delay for smooth animation
     setTimeout(() => {
-      const form = document.querySelector('form')
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
-      }
-    }, 100)
+      formRef.current?.requestSubmit()
+    }, 50)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,6 +147,20 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
     try {
       const response = await aiApi.chat(userInput, conversationId)
+      if (!response.success) {
+        const msg =
+          response.error?.message ||
+          'The assistant could not complete this request. Please try again or use Browse for packages.'
+        if (response.error?.code === 'SERVICE_UNAVAILABLE') setAiAvailable(false)
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: msg,
+        }
+        setMessages((prev) => [...prev, assistantMessage])
+        setShouldScroll(true)
+        return
+      }
       if (response.success && response.data) {
         // Map recommendations to ensure they have 'id' field (convert packageId to id)
         const recommendations = (response.data.recommendations || []).map((rec: any) => ({
@@ -136,6 +177,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
         }
         setMessages((prev) => [...prev, assistantMessage])
         setShouldScroll(true)
+        setAiAvailable(true)
         if (response.data.conversationId) {
           setConversationId(response.data.conversationId)
         }
@@ -166,17 +208,23 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
     } catch (error: any) {
       console.error('Chat error:', error)
       
-      let errorContent = 'Sorry, I encountered an error. Please try again.'
+      let errorContent = 'Sorry, something went wrong. Please try again.'
       
-      // Provide more specific error messages
-      if (error.response?.status === 503) {
-        errorContent = '🔧 AI service is currently unavailable. Our team is working on it. Please try again in a few moments.'
-      } else if (error.response?.status === 401) {
-        errorContent = '🔒 Please log in to use the AI assistant.'
+      const status = error.response?.status
+      const apiMsg = error.response?.data?.error?.message as string | undefined
+
+      if (status === 503 || status === 502) {
+        errorContent =
+          'The AI assistant is temporarily unavailable. You can still browse all trips under Browse, or tap Retry below when the service is back.'
+        setAiAvailable(false)
+      } else if (status === 401) {
+        errorContent = 'Please sign in as a tourist to use the assistant.'
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-        errorContent = '📡 Connection error. Please check your internet connection and try again.'
-      } else if (error.response?.data?.error?.message) {
-        errorContent = `⚠️ ${error.response.data.error.message}`
+        errorContent =
+          'No connection to the server. Check your network, confirm the app is running, then try again.'
+        setAiAvailable(false)
+      } else if (apiMsg) {
+        errorContent = apiMsg
       }
       
       const errorMessage: Message = {
@@ -241,37 +289,48 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
   }
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col rounded-3xl border border-gray-700/30 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 shadow-2xl backdrop-blur-xl">
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[inherit] border border-white/[0.07] bg-gradient-to-b from-[#14161c] via-[#101218] to-[#0c0e12] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-xl">
       {/* Modern Gradient Header with Glass Effect */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative flex flex-shrink-0 items-center justify-between border-b border-gray-700/30 bg-gradient-to-r from-[#566614]/20 via-[#6E6B40]/20 to-[#566614]/20 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4"
+        className="relative flex flex-shrink-0 items-center justify-between border-b border-white/[0.06] bg-gradient-to-r from-[#566614]/15 via-[#3d4118]/20 to-[#566614]/15 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3"
       >
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#566614]/10 to-[#6E6B40]/10 animate-gradient-x"></div>
         
-        <div className="relative z-10 flex min-w-0 items-center space-x-3 sm:space-x-4">
+        <div className="relative z-10 flex min-w-0 items-center gap-2.5 sm:gap-4">
           <motion.div 
-            whileHover={{ scale: 1.1, rotate: 360 }}
-            transition={{ duration: 0.5 }}
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-lg shadow-[#566614]/20 sm:h-12 sm:w-12"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#566614] to-[#6E6B40] shadow-md shadow-[#566614]/20 sm:h-11 sm:w-11"
           >
-            <svg className="h-5 w-5 text-white sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </motion.div>
           <div className="min-w-0">
-            <h2 className="truncate text-base font-bold tracking-tight text-white sm:text-lg" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
-              RAAHI AI Assistant
+            <h2 className="truncate text-sm font-bold leading-tight text-white sm:text-base" style={{ fontFamily: 'LEMON MILK, sans-serif' }}>
+              <span className="sm:hidden">Travel assistant</span>
+              <span className="hidden sm:inline">RAAHI AI Assistant</span>
             </h2>
-            <div className="flex items-center space-x-2">
-              <motion.div 
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="h-2 w-2 flex-shrink-0 rounded-full bg-green-400 shadow-lg shadow-green-400/50"
-              />
-              <span className="text-[11px] font-medium text-gray-300 sm:text-xs">Powered by Custom AI</span>
+            <div className="mt-0.5 flex items-center gap-1.5">
+              {aiAvailable === null ? (
+                <>
+                  <span className="h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-gray-500" />
+                  <span className="text-[11px] text-gray-500">Checking…</span>
+                </>
+              ) : aiAvailable ? (
+                <>
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  <span className="text-[11px] text-gray-400">Ready</span>
+                </>
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-400" />
+                  <span className="text-[11px] text-amber-200/90">Assistant offline</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -282,10 +341,37 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           transition={{ delay: 0.3 }}
           className="relative z-10 hidden flex-shrink-0 text-right sm:block"
         >
-          <div className="text-xs text-gray-400">Response Time</div>
-          <div className="text-sm font-bold text-[#FFFAC3]">&lt; 2s</div>
+          <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">RAAHI</div>
+          <div className="text-xs font-semibold text-[#FFFAC3]/90">Travel AI</div>
         </motion.div>
       </motion.div>
+
+      {aiAvailable === false && (
+        <div className="flex flex-shrink-0 items-start gap-2 border-b border-amber-500/20 bg-amber-950/40 px-3 py-2.5 sm:px-4">
+          <span className="mt-0.5 text-amber-400" aria-hidden>
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0v2a1 1 0 102 0v-2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium leading-snug text-amber-100/95">
+              The AI engine is not reachable right now. Start the AI agent service, or use{' '}
+              <span className="text-white/90">Browse</span> to explore packages.
+            </p>
+            <button
+              type="button"
+              onClick={recheckAiStatus}
+              className="mt-1.5 touch-manipulation text-xs font-semibold text-amber-300 underline decoration-amber-500/50 underline-offset-2 hover:text-amber-200"
+            >
+              Retry connection
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Suggestion Chips - Appears at top when no messages */}
       {showSuggestions && messages.length === 1 && (
@@ -294,23 +380,24 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ delay: 0.4 }}
-          className="bg-gradient-to-b from-gray-900/50 to-transparent px-3 pb-2 pt-3 sm:px-6 sm:pt-4"
+          className="bg-gradient-to-b from-gray-900/50 to-transparent px-3 pb-3 pt-2 sm:px-5 sm:pt-3"
         >
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 sm:mb-3 sm:text-xs">
-            ✨ Try these popular queries
+          <p className="mb-2 text-xs font-medium text-gray-300 sm:text-sm">
+            Quick picks <span className="font-normal text-gray-500">— tap one</span>
           </p>
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin] sm:flex-wrap">
+          <div className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:gap-2 sm:overflow-visible">
             {SUGGESTION_CHIPS.map((chip, index) => (
               <motion.button
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => handleSuggestionClick(chip.query)}
-                className="group relative shrink-0 snap-start touch-manipulation rounded-xl border border-gray-700/50 bg-gradient-to-r from-gray-800/60 to-gray-700/60 px-3 py-2 text-xs font-medium text-white shadow-lg transition-all hover:border-[#566614]/50 hover:from-[#566614]/20 hover:to-[#6E6B40]/20 hover:shadow-[#566614]/20 sm:px-4 sm:py-2.5 sm:text-sm"
+                disabled={aiAvailable === false || loading}
+                className="group relative min-h-[44px] shrink-0 snap-center touch-manipulation rounded-2xl border border-gray-600/60 bg-gray-800/90 px-3.5 py-2.5 text-left text-sm font-medium leading-snug text-white shadow-md transition-all active:border-[#566614]/80 active:bg-[#566614]/20 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-0 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 <span className="relative z-10">{chip.label}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#566614]/0 to-[#6E6B40]/0 group-hover:from-[#566614]/10 group-hover:to-[#6E6B40]/10 rounded-xl transition-all" />
@@ -322,7 +409,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
 
       {/* Messages Area - Modern Scrollable */}
       <div 
-        className="chat-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-6 sm:py-4" 
+        className="chat-scrollbar chat-scroll-touch min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-4 sm:py-4" 
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: '#566614 #1f2937',
@@ -563,92 +650,64 @@ export default function AIChat({ onPackageFilter, onPackageSelect }: AIChatProps
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Modern Input Form with Glassmorphism */}
+      {/* Input row — same pattern as mobile chat apps (field + round send) */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative flex-shrink-0 border-t border-gray-700/30 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl sm:p-6"
+        className="relative flex-shrink-0 border-t border-white/[0.06] bg-gradient-to-t from-[#0c0e12] via-gray-900/95 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-4"
       >
-        {/* Subtle gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#566614]/5 to-transparent" />
         
-        <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-2 sm:flex-row sm:gap-3">
+        <form ref={formRef} onSubmit={handleSubmit} className="relative z-10 flex items-end gap-2">
           <div className="group relative min-w-0 flex-1">
+            <label htmlFor="raahi-chat-input" className="sr-only">
+              Message to travel assistant
+            </label>
             <input
+              id="raahi-chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything about Pakistani destinations..."
-              className="w-full touch-manipulation rounded-2xl border-2 border-gray-700/50 bg-gray-800/80 px-4 py-3.5 pr-12 text-base text-white placeholder-gray-400 shadow-lg backdrop-blur-sm transition-all focus:border-[#566614]/70 focus:outline-none focus:ring-2 focus:ring-[#566614]/50 group-hover:border-gray-600/50 sm:px-5 sm:py-4"
-              disabled={loading}
+              placeholder="Message… e.g. Hunza under 25k"
+              autoComplete="off"
+              className="w-full touch-manipulation rounded-[1.35rem] border border-gray-600/80 bg-gray-800/95 px-4 py-3 pr-10 text-base text-white shadow-inner placeholder:text-gray-500 focus:border-[#566614] focus:outline-none focus:ring-2 focus:ring-[#566614]/40"
+              disabled={loading || aiAvailable === false}
               enterKeyHint="send"
             />
-            {input && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+            {input ? (
+              <button
                 type="button"
                 onClick={() => setInput('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1 hover:bg-gray-700/50 rounded-lg"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 hover:bg-gray-700/60 hover:text-white"
+                aria-label="Clear message"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </motion.button>
-            )}
-            {/* Typing indicator line */}
-            {input && (
-              <motion.div
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#566614] to-[#6E6B40] rounded-full"
-              />
-            )}
+              </button>
+            ) : null}
           </div>
           <motion.button
             type="submit"
-            disabled={loading || !input.trim()}
-            whileHover={{ scale: 1.05 }}
+            disabled={loading || !input.trim() || aiAvailable === false}
             whileTap={{ scale: 0.95 }}
-            className="group relative flex min-h-[48px] w-full touch-manipulation items-center justify-center rounded-2xl bg-gradient-to-r from-[#566614] to-[#6E6B40] px-6 py-3 font-bold text-white transition-all hover:shadow-xl hover:shadow-[#566614]/30 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0 sm:min-w-[65px] sm:w-auto sm:self-stretch sm:py-4"
+            aria-label="Send message"
+            className="flex h-12 w-12 flex-shrink-0 touch-manipulation items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-lg transition-all hover:shadow-[#566614]/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            
             {loading ? (
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-              />
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
-              <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg className="h-6 w-6 -translate-x-0.5 translate-y-0.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
               </svg>
             )}
           </motion.button>
         </form>
-        
-        {/* Hint text — short on mobile, full from sm+ */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-2 text-center text-[11px] leading-snug text-gray-500 sm:hidden"
-        >
-          Try: Hunza, Swat, budget trips…
-        </motion.div>
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-3 hidden items-center justify-center gap-2 text-xs text-gray-500 sm:flex"
-        >
-          <svg className="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <span className="text-center">Try: &quot;Hunza under 30k&quot; · &quot;Family Murree trip&quot; · &quot;Sasta Naran package&quot;</span>
-        </motion.div>
+        {!(showSuggestions && messages.length === 1) && (
+          <p className="relative z-10 mt-2 text-center text-[11px] text-gray-500">
+            Tip: switch to <span className="text-gray-400">Browse</span> above to see all packages
+          </p>
+        )}
       </motion.div>
 
       {/* Booking Modal */}

@@ -179,6 +179,11 @@ export const bookingApi = {
 }
 
 export const aiApi = {
+  /** Public: AI agent reachable (backend probes AI_AGENT_URL/health). */
+  getStatus: async () => {
+    const response = await api.get<ApiResponse<{ available: boolean }>>('/ai/status')
+    return response.data
+  },
   chat: async (message: string, conversationId?: string) => {
     const response = await api.post<ApiResponse<{ response: string; recommendations?: any[]; conversationId: string }>>(
       '/ai/chat',

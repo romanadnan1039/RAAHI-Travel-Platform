@@ -5,6 +5,23 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Hide scrollbars but keep touch scroll (suggestion chips row) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* iOS/Android: momentum scroll inside chat transcript */
+  .chat-scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}
+
 /* LEMON MILK Font - using Google Fonts alternative or system fonts */
 @font-face {
   font-family: 'LEMON MILK';

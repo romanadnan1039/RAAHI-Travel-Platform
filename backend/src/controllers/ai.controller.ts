@@ -4,8 +4,30 @@ import { logger } from '../utils/logger.util'
 
 const AI_AGENT_URL = process.env.AI_AGENT_URL || 'http://localhost:5001'
 
+function isAgentUnreachable(error: any): boolean {
+  const code = error?.code
+  return (
+    code === 'ECONNREFUSED' ||
+    code === 'ETIMEDOUT' ||
+    code === 'ECONNABORTED' ||
+    code === 'ENOTFOUND' ||
+    code === 'EHOSTUNREACH'
+  )
+}
+
 // Log AI Agent URL on startup
 logger.info(`🤖 AI Agent URL configured: ${AI_AGENT_URL}`)
+
+/** Public: whether the AI agent process is reachable (for UI banner). */
+export const status = async (_req: Request, res: Response) => {
+  try {
+    await axios.get(`${AI_AGENT_URL}/health`, { timeout: 4000 })
+    return res.json({ success: true, data: { available: true } })
+  } catch (error: any) {
+    logger.warn(`AI agent health check failed: ${error?.message || error}`)
+    return res.json({ success: true, data: { available: false } })
+  }
+}
 
 export const chat = async (req: Request, res: Response) => {
   try {
@@ -33,7 +55,7 @@ export const chat = async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error(`❌ AI chat error:`, error.message)
     
-    if (error.code === 'ECONNREFUSED') {
+    if (isAgentUnreachable(error)) {
       return res.status(503).json({
         success: false,
         error: {
@@ -75,7 +97,7 @@ export const recommend = async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error(`❌ AI recommend error:`, error.message)
     
-    if (error.code === 'ECONNREFUSED') {
+    if (isAgentUnreachable(error)) {
       return res.status(503).json({
         success: false,
         error: {
