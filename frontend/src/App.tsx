@@ -18,13 +18,15 @@ function App() {
           role="alert"
           className="border-b border-amber-400 bg-amber-100 px-4 py-3 text-center text-sm text-amber-950"
         >
-          <strong className="font-semibold">API URL not set for production.</strong> In Vercel → Settings →
-          Environment Variables, add <code className="rounded bg-amber-200/80 px-1">VITE_API_URL</code> = your
-          Railway backend URL with <code className="rounded bg-amber-200/80 px-1">/api</code> (example:{' '}
-          <code className="rounded bg-amber-200/80 px-1">https://your-app.up.railway.app/api</code>
-          ), plus <code className="rounded bg-amber-200/80 px-1">VITE_WS_URL</code> ={' '}
-          <code className="rounded bg-amber-200/80 px-1">wss://your-app.up.railway.app</code>, then{' '}
-          <strong>Redeploy</strong>.
+          <strong className="font-semibold">Backend URL missing or still a documentation example.</strong> Open{' '}
+          <strong>Railway</strong> → your backend service → copy the <strong>public HTTPS URL</strong> (it looks like{' '}
+          <code className="rounded bg-amber-200/80 px-1">https://something-real.up.railway.app</code>
+          ). In <strong>Vercel</strong> → Settings → Environment Variables set{' '}
+          <code className="rounded bg-amber-200/80 px-1">VITE_API_URL</code> to that URL (with or without{' '}
+          <code className="rounded bg-amber-200/80 px-1">/api</code>),{' '}
+          <code className="rounded bg-amber-200/80 px-1">VITE_WS_URL</code> to{' '}
+          <code className="rounded bg-amber-200/80 px-1">wss://</code> + same host, then <strong>Redeploy</strong>. Do not
+          use words like &quot;your-service&quot; or &quot;your-app&quot; — those are placeholders, not real hosts.
         </div>
       )}
       <Routes>

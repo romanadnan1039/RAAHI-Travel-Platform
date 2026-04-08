@@ -5,7 +5,7 @@ import PackageGrid from '../components/packages/PackageGrid'
 import FilterSidebar from '../components/packages/FilterSidebar'
 import PackageDetailsModal from '../components/packages/PackageDetailsModal'
 import { packageApi } from '../services/api'
-import { getApiBaseUrl } from '../config/env'
+import { getApiBaseUrl, isPlaceholderViteApiUrl } from '../config/env'
 import type { Package } from '../types'
 
 interface FilterState {
@@ -64,6 +64,14 @@ export default function PackageList() {
       const isNetwork =
         !error.response &&
         (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('Network'))
+
+      if (isPlaceholderViteApiUrl()) {
+        setError(
+          'VITE_API_URL looks like a documentation example (e.g. your-service). Replace it in Vercel with your real Railway public HTTPS URL from the Railway dashboard, then redeploy.'
+        )
+        return
+      }
+
       let origin = ''
       try {
         origin = new URL(getApiBaseUrl()).origin
@@ -71,7 +79,7 @@ export default function PackageList() {
         origin = '(invalid VITE_API_URL)'
       }
       const networkHint = isNetwork
-        ? ` Request URL: ${origin}/api — set VITE_API_URL on Vercel (Production) to your Railway HTTPS URL (with or without /api), redeploy, and ensure Railway FRONTEND_URL includes this site.`
+        ? ` Could not reach ${origin}. In Vercel → Environment Variables set VITE_API_URL to your Railway backend URL, redeploy, and set Railway FRONTEND_URL to this Vercel site.`
         : ''
       setError(apiMsg || `Failed to connect to server.${networkHint}`)
     } finally {
