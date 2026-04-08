@@ -2,6 +2,10 @@
 
 The frontend is built with **Vite**: `VITE_*` values are **baked in at build time**. If they are missing or wrong, the live site still calls `localhost` or an old Railway URL → the browser cannot reach your backend.
 
+## 0. Yellow banner on the site?
+
+If you see **“API URL not set for production”**, the last Vercel build did not receive `VITE_API_URL`. Add the variables below and **Redeploy** (env changes apply only on a new build).
+
 ## 1. Vercel → Environment Variables
 
 Open **Vercel** → your project → **Settings** → **Environment Variables**.
