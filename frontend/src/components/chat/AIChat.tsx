@@ -132,7 +132,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
 
   // Handle suggestion chip click
   const handleSuggestionClick = (query: string) => {
-    if (aiAvailable === false || loading) return
+    if (loading) return
     setInput(query)
     setShowSuggestions(false)
     setTimeout(() => {
@@ -230,6 +230,9 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
         errorContent =
           'The AI assistant is temporarily unavailable. You can still browse all trips under Browse, or tap Retry below when the service is back.'
         setAiAvailable(false)
+      } else if (status === 403) {
+        errorContent =
+          'Your account cannot use this assistant here. Log in as a tourist, or continue with Browse.'
       } else if (status === 401) {
         errorContent = 'Please sign in as a tourist to use the assistant.'
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
@@ -386,8 +389,8 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium leading-snug text-amber-100/95">
-              The AI engine is not reachable right now. Start the AI agent service, or use{' '}
-              <span className="text-white/90">Browse</span> to explore packages.
+              The status check could not reach the AI engine (it may still respond). You can send a message below to try,
+              or use <span className="text-white/90">Browse</span> for packages.
             </p>
             <button
               type="button"
@@ -423,7 +426,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => handleSuggestionClick(chip.query)}
-                disabled={aiAvailable === false || loading}
+                disabled={loading}
                 className="group relative min-h-[44px] shrink-0 snap-center touch-manipulation rounded-2xl border border-gray-600/60 bg-gray-800/90 px-3.5 py-2.5 text-left text-sm font-medium leading-snug text-white shadow-md transition-all active:border-[#566614]/80 active:bg-[#566614]/20 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-0 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 <span className="relative z-10">{chip.label}</span>
@@ -705,7 +708,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
               whileFocus={{ scale: 1.01 }}
               transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               className="w-full touch-manipulation rounded-[1.35rem] border border-gray-600/80 bg-gray-800/95 px-4 py-3 pr-10 text-base text-white shadow-inner placeholder:text-gray-500 focus:border-[#566614] focus:outline-none focus:ring-2 focus:ring-[#566614]/40"
-              disabled={loading || aiAvailable === false}
+              disabled={loading}
               enterKeyHint="send"
             />
             {input ? (
@@ -723,7 +726,7 @@ export default function AIChat({ onPackageFilter, onPackageSelect, onClose }: AI
           </div>
           <motion.button
             type="submit"
-            disabled={loading || !input.trim() || aiAvailable === false}
+            disabled={loading || !input.trim()}
             whileTap={{ scale: 0.95 }}
             aria-label="Send message"
             className="flex h-12 w-12 flex-shrink-0 touch-manipulation items-center justify-center rounded-full bg-gradient-to-br from-[#566614] to-[#6E6B40] text-white shadow-lg transition-all hover:shadow-[#566614]/40 disabled:cursor-not-allowed disabled:opacity-40"

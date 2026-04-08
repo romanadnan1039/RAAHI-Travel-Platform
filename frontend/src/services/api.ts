@@ -28,30 +28,37 @@ api.interceptors.response.use(
     
     // Handle 401 Unauthorized errors (invalid/expired token)
     if (error.response?.status === 401) {
+      const reqUrl = String(originalRequest?.url ?? '')
+      if (reqUrl.includes('/ai/')) {
+        return Promise.reject(error)
+      }
+
       console.error('Authentication failed:', error.response?.data)
-      
+
       // Prevent infinite redirect loop
       if (!originalRequest._retry) {
         originalRequest._retry = true
-        
+
         // Clear all auth data
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        
+
         // Show user-friendly error message
         const errorMessage = error.response?.data?.error?.message || 'Your session has expired'
         console.error('Auth Error:', errorMessage)
-        
+
         // Only redirect if not already on login page
         if (!window.location.pathname.includes('/login')) {
           // Show notification
-          if (error.response?.data?.error?.code === 'UNAUTHORIZED' || 
-              error.response?.data?.error?.message?.includes('not found')) {
+          if (
+            error.response?.data?.error?.code === 'UNAUTHORIZED' ||
+            error.response?.data?.error?.message?.includes('not found')
+          ) {
             alert('Your session is invalid. Please login again.')
           } else {
             alert('Session expired. Please login again.')
           }
-          
+
           window.location.href = '/login/user'
         }
       }
