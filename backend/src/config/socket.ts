@@ -1,13 +1,14 @@
 import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
 import { verifyToken } from '../utils/jwt.util'
+import { getAllowedOrigins } from '../utils/cors.util'
 
 let io: SocketIOServer | null = null
 
 export const initializeSocket = (httpServer: HTTPServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      origin: getAllowedOrigins(),
       credentials: true,
     },
   })

@@ -22,6 +22,7 @@ export const config = {
   },
   
   cors: {
+    /** Comma-separated origins, e.g. `https://app.vercel.app,https://preview.vercel.app` */
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   },
   

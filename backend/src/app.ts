@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import { config } from './config/env'
+import { getAllowedOrigins } from './utils/cors.util'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware'
 import { apiLimiter } from './middleware/rateLimiter.middleware'
 
@@ -20,7 +21,14 @@ const app: Express = express()
 // Security middleware
 app.use(helmet())
 app.use(cors({
-  origin: config.cors.frontendUrl,
+  origin: (origin, callback) => {
+    const allowed = getAllowedOrigins()
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 
